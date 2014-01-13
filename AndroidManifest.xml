@@ -51,7 +51,6 @@
       </intent-filter>
     </activity>
 
-    <activity android:name=".PrivacyPolicyActivity" />
     <activity android:name=".RouteMapActivity" />
     <activity android:name=".RoutePickerActivity" />
   </application>

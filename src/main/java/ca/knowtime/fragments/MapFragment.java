@@ -95,74 +95,19 @@ public class MapFragment
             position = mMap.getCameraPosition();
         }
 
-        LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
-        LatLng bottom = bounds.southwest;
-        LatLng top = bounds.northeast;
-        float zoom = position.zoom;
+        final LatLngBounds bounds = mMap.getProjection().getVisibleRegion().latLngBounds;
+        final LatLng bottom = bounds.southwest;
+        final LatLng top = bounds.northeast;
 
-        Bundle b = new Bundle();
+        final Bundle b = new Bundle();
         b.putDouble( "bottomLat", bottom.latitude );
         b.putDouble( "bottomLog", bottom.longitude );
         b.putDouble( "topLat", top.latitude );
         b.putDouble( "topLog", top.longitude );
-        b.putFloat( "zoom", zoom );
+        b.putFloat( "zoom", position.zoom );
         b.putBoolean( "showStops", mShowStops );
 
-        getLoaderManager().restartLoader( 0, b, getMoo() ).forceLoad();
-    }
-
-
-    private LoaderManager.LoaderCallbacks<HashMap<String, MarkerOptions>> getMoo() {
-        return new LoaderManager.LoaderCallbacks<HashMap<String, MarkerOptions>>()
-        {
-            @Override
-            public Loader<HashMap<String, MarkerOptions>> onCreateLoader( final int id, final Bundle args ) {
-                setStopMarkerProgressBar( true );
-                return new StopsMarkerLoader( mContext, args.getDouble( "bottomLat" ), args.getDouble( "bottomLog" ),
-                                              args.getDouble( "topLat" ), args.getDouble( "topLog" ),
-                                              args.getFloat( "zoom" ), mShowStops );
-            }
-
-
-            @Override
-            public void onLoadFinished( final Loader<HashMap<String, MarkerOptions>> loader,
-                                        final HashMap<String, MarkerOptions> marker ) {
-                setStopMarkerProgressBar( false );
-                addItemsToMap( marker );
-            }
-
-
-            private void addItemsToMap( HashMap<String, MarkerOptions> result ) {
-                final Object[] currentStops = mBusStopMarkers.keySet().toArray();
-                Marker marker;
-                for( Object currentStop : currentStops ) {
-                    marker = mBusStopMarkers.get( currentStop );
-
-                    if( !result.containsKey( currentStop ) && !marker.isInfoWindowShown() ) {
-                        marker.remove();
-                        mBusStopMarkers.remove( currentStop );
-                    } else {
-                        result.remove( currentStop );
-                    }
-                }
-                if( mShowStops ) {
-                    for( String newStop : result.keySet() ) {
-                        mBusStopMarkers.put( newStop, mMap.addMarker( result.get( newStop ) ) );
-                    }
-                }
-            }
-
-
-            @Override
-            public void onLoaderReset( final Loader<HashMap<String, MarkerOptions>> loader ) {
-            }
-
-
-            private void setStopMarkerProgressBar( boolean b ) {
-                mMapMarkerProgressBar.setVisibility( b ? View.VISIBLE : View.INVISIBLE );
-                mMapMarkerProgressBarText.setVisibility( b ? View.VISIBLE : View.INVISIBLE );
-            }
-        };
+        getLoaderManager().restartLoader( 0, b, new MapItemsLoaderCallbacks() ).forceLoad();
     }
 
 
@@ -176,5 +121,63 @@ public class MapFragment
             intent.putExtra( "STOP_NAME", marker.getTitle() );
             startActivity( intent );
         }
+    }
+
+    private class MapItemsLoaderCallbacks
+            implements LoaderManager.LoaderCallbacks<HashMap<String, MarkerOptions>>
+    {
+        @Override
+        public Loader<HashMap<String, MarkerOptions>> onCreateLoader( final int id, final Bundle args ) {
+            setStopMarkerProgressBar( true );
+            return new StopsMarkerLoader( mContext, args.getDouble( "bottomLat" ), args.getDouble( "bottomLog" ),
+                                          args.getDouble( "topLat" ), args.getDouble( "topLog" ),
+                                          args.getFloat( "zoom" ), mShowStops );
+        }
+
+
+        @Override
+        public void onLoadFinished( final Loader<HashMap<String, MarkerOptions>> loader,
+                                    final HashMap<String, MarkerOptions> marker ) {
+            setStopMarkerProgressBar( false );
+            addItemsToMap( marker );
+        }
+
+
+        private void addItemsToMap( HashMap<String, MarkerOptions> result ) {
+            final Object[] currentStops = mBusStopMarkers.keySet().toArray();
+            Marker marker;
+            for( Object currentStop : currentStops ) {
+                marker = mBusStopMarkers.get( currentStop );
+
+                if( !result.containsKey( currentStop ) && !marker.isInfoWindowShown() ) {
+                    marker.remove();
+                    mBusStopMarkers.remove( currentStop );
+                } else {
+                    result.remove( currentStop );
+                }
+            }
+            if( mShowStops ) {
+                for( String newStop : result.keySet() ) {
+                    mBusStopMarkers.put( newStop, mMap.addMarker( result.get( newStop ) ) );
+                }
+            }
+        }
+
+
+        @Override
+        public void onLoaderReset( final Loader<HashMap<String, MarkerOptions>> loader ) {
+        }
+
+
+        private void setStopMarkerProgressBar( boolean b ) {
+            mMapMarkerProgressBar.setVisibility( b ? View.VISIBLE : View.INVISIBLE );
+            mMapMarkerProgressBarText.setVisibility( b ? View.VISIBLE : View.INVISIBLE );
+        }
+    }
+
+
+    public void toggleStopsVisibility() {
+        mShowStops = !mShowStops;
+        refreshBusStopMarkers( null );
     }
 }

@@ -5,15 +5,6 @@
     android:orientation="vertical"
     android:background="@drawable/background" >
 
-    <ImageButton
-        android:id="@+id/backButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.03"
-        android:background="@drawable/backbuttonfull"
-        android:contentDescription="@string/back_button_contentdescription"
-        android:onClick="touchBackButton" />
-
     <TextView
         android:id="@+id/aboutTextView"
         android:layout_width="wrap_content"
@@ -41,5 +32,5 @@
         	android:scrollbars="vertical"
         	android:text="@string/privacy_policy_text" />
    	</ScrollView>
-    
+
 </LinearLayout>

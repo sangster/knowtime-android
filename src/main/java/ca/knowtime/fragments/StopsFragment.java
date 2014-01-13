@@ -120,19 +120,19 @@ public class StopsFragment
     private class GetStopsRunnable
             implements Runnable
     {
-        private final JSONArray m_jsonArray;
+        private final JSONArray mJsonArray;
 
 
         public GetStopsRunnable( final JSONArray jsonArray ) {
-            m_jsonArray = jsonArray;
+            mJsonArray = jsonArray;
         }
 
 
         @Override
         public void run() {
-            for( int i = 0; i < m_jsonArray.length(); i++ ) {
+            for( int i = 0; i < mJsonArray.length(); i++ ) {
                 try {
-                    final JSONObject routeItem = m_jsonArray.getJSONObject( i );
+                    final JSONObject routeItem = mJsonArray.getJSONObject( i );
                     LayoutInflater li = (LayoutInflater) getActivity().getSystemService(
                             Context.LAYOUT_INFLATER_SERVICE );
                     View stopRow = li.inflate( R.layout.stopscellview, null );

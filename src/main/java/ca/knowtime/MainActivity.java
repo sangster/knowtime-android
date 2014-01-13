@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import ca.knowtime.fragments.AboutFragment;
+import ca.knowtime.fragments.PrivacyPolicyFragment;
 import ca.knowtime.fragments.ShareMeFragment;
 import ca.knowtime.fragments.StopsFragment;
 import ca.knowtime.fragments.TwitterFragment;
@@ -79,7 +80,7 @@ public class MainActivity
     @Override
     public boolean onCreateOptionsMenu( Menu menu ) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate( R.menu.main, menu );
+//        getMenuInflater().inflate( R.menu.main, menu );
         return true;
     }
 
@@ -205,7 +206,7 @@ public class MainActivity
 
 
     public void privacyPolicyButton( View view ) {
-        Intent intent = new Intent( MainActivity.this, PrivacyPolicyActivity.class );
+        Intent intent = new Intent( MainActivity.this, PrivacyPolicyFragment.class );
         startActivity( intent );
     }
 }

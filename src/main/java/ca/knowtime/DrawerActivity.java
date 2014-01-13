@@ -3,6 +3,7 @@ package ca.knowtime;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.View;
@@ -12,8 +13,8 @@ import android.widget.ListView;
 import ca.knowtime.fragments.AboutFragment;
 import ca.knowtime.fragments.FavouritesFragment;
 import ca.knowtime.fragments.MapFragment;
+import ca.knowtime.fragments.PrivacyPolicyFragment;
 import ca.knowtime.fragments.ShareMeFragment;
-import ca.knowtime.fragments.StopsFragment;
 import ca.knowtime.fragments.TwitterFragment;
 
 public class DrawerActivity
@@ -54,23 +55,16 @@ public class DrawerActivity
 
     /** Swaps fragments in the main content view */
     private void selectItem( int position ) {
-        // Create a new fragment and specify the planet to show based on position
-        //        Fragment fragment = new PlanetFragment();
-        //        Bundle args = new Bundle();
-        //        args.putInt( PlanetFragment.ARG_PLANET_NUMBER, position );
-        //        fragment.setArguments( args );
-        //
-        //        // Insert the fragment by replacing any existing fragment
-        //        FragmentManager fragmentManager = getFragmentManager();
-        //        fragmentManager.beginTransaction().replace( R.id.content_frame, fragment ).commit();
-        //
-        //        // Highlight the selected item, update the title, and close the drawer
-        //        mDrawerList.setItemChecked( position, true );
-        //        setTitle( mPlanetTitles[position] );
-
-        final FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace( R.id.content_frame, getFragment( position ) ).commit();
-        mDrawerLayout.closeDrawer( mDrawerList );
+        if( position == 2 ) {
+            final MapFragment map = (MapFragment) getFragmentManager().findFragmentById( R.id.content_frame );
+            map.toggleStopsVisibility();
+        } else {
+            final FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction.addToBackStack( null );
+            transaction.replace( R.id.content_frame, getFragment( position ) );
+            transaction.commit();
+            mDrawerLayout.closeDrawer( mDrawerList );
+        }
     }
 
 
@@ -80,12 +74,12 @@ public class DrawerActivity
                 return new ShareMeFragment();
             case 1:
                 return new AboutFragment();
-            case 2:
-                return new StopsFragment();
             case 3:
                 return new FavouritesFragment();
             case 4:
                 return new TwitterFragment();
+            case 5:
+                return new PrivacyPolicyFragment();
             default:
                 throw new IllegalArgumentException( "Unknown drawer item, pos: " + position );
         }
