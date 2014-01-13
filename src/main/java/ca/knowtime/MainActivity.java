@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import ca.knowtime.fragments.ShareMeFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
@@ -21,7 +22,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
 import java.util.HashMap;
 
@@ -35,7 +35,6 @@ public class MainActivity
     public static final LatLng DEFAULT_HALIFAX_LAT_LNG = new LatLng( 44.67600, -63.60800 );
     public static final int DEFAULT_HALIFAX_LAT_LNG_ZOOM = 15;
     private HashMap<String, Marker> busStopMarkers = new HashMap<String, Marker>();
-    private SlidingMenu hamburgerMenu;
     private Boolean showStops;
     private ProgressBar mapMarkerProgressBar;
     private TextView mapMarkerProgressBarText;
@@ -70,11 +69,6 @@ public class MainActivity
                 mMap.setOnInfoWindowClickListener( getInfoWindowClickListener() );
             }
         }
-        hamburgerMenu = new SlidingMenu( this );
-        hamburgerMenu.setMode( SlidingMenu.LEFT );
-        hamburgerMenu.setBehindWidth( 250 );
-        hamburgerMenu.attachToActivity( this, SlidingMenu.SLIDING_CONTENT );
-        hamburgerMenu.setMenu( R.layout.menu );
 
         refreshBusStopMarkers( null );
     }
@@ -184,26 +178,15 @@ public class MainActivity
     }
 
 
-    public void touchHamburgerMenuButton( View view ) {
-        if( hamburgerMenu.isMenuShowing() ) {
-            hamburgerMenu.showContent();
-        } else {
-            hamburgerMenu.showMenu();
-        }
-    }
-
-
     public void touchShareMeButton( View view ) {
-        Intent intent = new Intent( MainActivity.this, ShareMeActivity.class );
+        Intent intent = new Intent( MainActivity.this, ShareMeFragment.class );
         startActivity( intent );
-        hamburgerMenu.showContent( false );
     }
 
 
     public void touchAboutButton( View view ) {
         Intent intent = new Intent( MainActivity.this, AboutActivity.class );
         startActivity( intent );
-        hamburgerMenu.showContent( false );
     }
 
 
@@ -213,23 +196,14 @@ public class MainActivity
     }
 
 
-    public void touchFavouriteButton( View view ) {
-        Intent intent = new Intent( MainActivity.this, FavouriteActivity.class );
-        startActivity( intent );
-        hamburgerMenu.showContent( false );
-    }
-
-
     public void touchHfxTransitButton( View view ) {
         Intent intent = new Intent( MainActivity.this, TwitterActivity.class );
         startActivity( intent );
-        hamburgerMenu.showContent( false );
     }
 
 
     public void privacyPolicyButton( View view ) {
         Intent intent = new Intent( MainActivity.this, PrivacyPolicyActivity.class );
         startActivity( intent );
-        hamburgerMenu.showContent( false );
     }
 }

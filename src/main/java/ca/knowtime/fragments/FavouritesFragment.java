@@ -1,53 +1,63 @@
-package ca.knowtime;
+package ca.knowtime.fragments;
 
-import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TableLayout;
 import android.widget.TextView;
+import ca.knowtime.DatabaseHandler;
+import ca.knowtime.R;
+import ca.knowtime.Route;
+import ca.knowtime.RouteMapActivity;
+import ca.knowtime.Stop;
+import ca.knowtime.StopsActivity;
 
 import java.util.List;
 
-public class FavouriteActivity
-        extends Activity
+public class FavouritesFragment
+        extends Fragment
 {
-
     TableLayout stopTable;
     TableLayout routeTable;
 
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
+    public void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        setContentView( R.layout.activity_favourite );
-        stopTable = (TableLayout) this.findViewById( R.id.stopsTable );
-        routeTable = (TableLayout) this.findViewById( R.id.routesTable );
         loadFavouriteStops();
         loadFavouriteRoutes();
     }
 
 
+    public View onCreateView( LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState ) {
+        final View view = inflater.inflate( R.layout.activity_favourite, container, false );
+
+        stopTable = (TableLayout) view.findViewById( R.id.stopsTable );
+        routeTable = (TableLayout) view.findViewById( R.id.routesTable );
+        return view;
+    }
+
+
     private void loadFavouriteStops() {
-        List<Stop> stops = DatabaseHandler.getInstance().getAllFavouriteStops();
+        List<Stop> stops = DatabaseHandler.getInstance( getActivity() ).getAllFavouriteStops();
         for( final Stop stop : stops ) {
             // Get favourite stops some how
-            LayoutInflater li = (LayoutInflater) getSystemService( Context.LAYOUT_INFLATER_SERVICE );
+            LayoutInflater li = (LayoutInflater) getActivity().getSystemService( Context.LAYOUT_INFLATER_SERVICE );
             View stopRow = li.inflate( R.layout.favouritecellview, null );
             final String stopNumber = stop.getCode();
             final String stopName = stop.getName();
-            stopRow.setOnTouchListener( new OnTouchListener()
+            stopRow.setOnTouchListener( new View.OnTouchListener()
             {
                 @Override
                 public boolean onTouch( View v, MotionEvent event ) {
                     if( event.getAction() == MotionEvent.ACTION_DOWN ) {
-                        Intent intent = new Intent( FavouriteActivity.this, StopsActivity.class );
+                        Intent intent = new Intent( getActivity(), StopsActivity.class );
                         intent.putExtra( "STOP_NUMBER", stopNumber );
                         intent.putExtra( "STOP_NAME", stopName );
                         startActivity( intent );
@@ -63,12 +73,12 @@ public class FavouriteActivity
             stopNameTextView.setText( stopName );
             final ImageButton favouriteButton = (ImageButton) stopRow.findViewById( R.id.favouriteButton );
             favouriteButton.setSelected( true );
-            favouriteButton.setOnTouchListener( new OnTouchListener()
+            favouriteButton.setOnTouchListener( new View.OnTouchListener()
             {
                 @Override
                 public boolean onTouch( View v, MotionEvent event ) {
                     stop.setFavourite( !favouriteButton.isSelected() );
-                    DatabaseHandler.getInstance().updateStop( stop );
+                    DatabaseHandler.getInstance( getActivity() ).updateStop( stop );
                     favouriteButton.setSelected( !favouriteButton.isSelected() );
                     return false;
                 }
@@ -78,20 +88,20 @@ public class FavouriteActivity
 
 
     private void loadFavouriteRoutes() {
-        List<Route> routes = DatabaseHandler.getInstance().getAllFavouriteRoutes();
+        List<Route> routes = DatabaseHandler.getInstance( getActivity() ).getAllFavouriteRoutes();
         for( final Route route : routes ) {
             // Get favourite routes some how
-            LayoutInflater li = (LayoutInflater) getSystemService( Context.LAYOUT_INFLATER_SERVICE );
+            LayoutInflater li = getActivity().getLayoutInflater();
             View stopRow = li.inflate( R.layout.favouritecellview, null );
             final String routeNumber = route.getShortName();
             String routeName = route.getLongName();
             final String routeId = route.getId();
-            stopRow.setOnTouchListener( new OnTouchListener()
+            stopRow.setOnTouchListener( new View.OnTouchListener()
             {
                 @Override
                 public boolean onTouch( View v, MotionEvent event ) {
                     if( event.getAction() == MotionEvent.ACTION_DOWN ) {
-                        Intent intent = new Intent( FavouriteActivity.this, RouteMapActivity.class );
+                        Intent intent = new Intent( getActivity(), RouteMapActivity.class );
                         intent.putExtra( "ROUTE_ID", routeId );
                         intent.putExtra( "ROUTE_NUMBER", routeNumber );
                         startActivity( intent );
@@ -107,12 +117,12 @@ public class FavouriteActivity
             routeNameTextView.setText( routeName );
             final ImageButton favouriteButton = (ImageButton) stopRow.findViewById( R.id.favouriteButton );
             favouriteButton.setSelected( true );
-            favouriteButton.setOnTouchListener( new OnTouchListener()
+            favouriteButton.setOnTouchListener( new View.OnTouchListener()
             {
                 @Override
                 public boolean onTouch( View v, MotionEvent event ) {
                     route.setFavourite( !favouriteButton.isSelected() );
-                    DatabaseHandler.getInstance().updateRoute( route );
+                    DatabaseHandler.getInstance( getActivity() ).updateRoute( route );
                     favouriteButton.setSelected( !favouriteButton.isSelected() );
                     return false;
                 }
@@ -122,6 +132,6 @@ public class FavouriteActivity
 
 
     public void touchBackButton( View view ) {
-        finish();
+        getActivity().finish();
     }
 }

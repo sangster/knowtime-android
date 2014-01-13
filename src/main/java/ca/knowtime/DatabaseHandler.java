@@ -210,16 +210,6 @@ public class DatabaseHandler
         return getRoutes( selectQuery );
     }
 
-    //	public int getStopCount()
-    //	{
-    //
-    //	}
-    //
-    //	public int getRouteCount()
-    //	{
-    //
-    //	}
-
 
     public int updateStop( Stop stop ) {
         SQLiteDatabase db = this.getWritableDatabase();
