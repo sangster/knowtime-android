@@ -9,8 +9,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import ca.knowtime.fragments.AboutFragment;
 import ca.knowtime.fragments.FavouritesFragment;
 import ca.knowtime.fragments.ShareMeFragment;
+import ca.knowtime.fragments.StopsFragment;
+import ca.knowtime.fragments.TwitterFragment;
 
 public class DrawerActivity
         extends Activity
@@ -68,16 +71,18 @@ public class DrawerActivity
 
     private Fragment getFragment( final int position ) {
         switch( position ) {
-            case 0: // Share Me
+            case 0:
                 return new ShareMeFragment();
-            case 1: // About
-            case 2: // Stops
-            case 3: // Favorites
+            case 1:
+                return new AboutFragment();
+            case 2:
+                return new StopsFragment();
+            case 3:
                 return new FavouritesFragment();
-            case 4: // Twitter
-
+            case 4:
+                return new TwitterFragment();
             default:
-                return null;
+                throw new IllegalArgumentException( "Unknown drawer item, pos: " + position );
         }
     }
 

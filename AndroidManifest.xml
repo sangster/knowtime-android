@@ -49,13 +49,8 @@
 
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
-
     </activity>
-    <activity android:name=".AboutActivity" />
-    <activity android:name=".FavouriteActivity" />
-    <activity android:name=".fragments.ShareMeFragment" />
-    <activity android:name=".StopsActivity" />
-    <activity android:name=".TwitterActivity" />
+
     <activity android:name=".PrivacyPolicyActivity" />
     <activity android:name=".RouteMapActivity" />
     <activity android:name=".RoutePickerActivity" />

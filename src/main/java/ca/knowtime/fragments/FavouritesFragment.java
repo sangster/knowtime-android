@@ -16,7 +16,6 @@ import ca.knowtime.R;
 import ca.knowtime.Route;
 import ca.knowtime.RouteMapActivity;
 import ca.knowtime.Stop;
-import ca.knowtime.StopsActivity;
 
 import java.util.List;
 
@@ -57,7 +56,7 @@ public class FavouritesFragment
                 @Override
                 public boolean onTouch( View v, MotionEvent event ) {
                     if( event.getAction() == MotionEvent.ACTION_DOWN ) {
-                        Intent intent = new Intent( getActivity(), StopsActivity.class );
+                        Intent intent = new Intent( getActivity(), StopsFragment.class );
                         intent.putExtra( "STOP_NUMBER", stopNumber );
                         intent.putExtra( "STOP_NAME", stopName );
                         startActivity( intent );

@@ -12,7 +12,10 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import ca.knowtime.fragments.AboutFragment;
 import ca.knowtime.fragments.ShareMeFragment;
+import ca.knowtime.fragments.StopsFragment;
+import ca.knowtime.fragments.TwitterFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
@@ -158,7 +161,7 @@ public class MainActivity
         {
             @Override
             public void onInfoWindowClick( Marker marker ) {
-                Intent intent = new Intent( MainActivity.this, StopsActivity.class );
+                Intent intent = new Intent( MainActivity.this, StopsFragment.class );
                 intent.putExtra( "STOP_NUMBER", marker.getSnippet() );
                 intent.putExtra( "STOP_NAME", marker.getTitle() );
                 startActivity( intent );
@@ -185,7 +188,7 @@ public class MainActivity
 
 
     public void touchAboutButton( View view ) {
-        Intent intent = new Intent( MainActivity.this, AboutActivity.class );
+        Intent intent = new Intent( MainActivity.this, AboutFragment.class );
         startActivity( intent );
     }
 
@@ -197,7 +200,7 @@ public class MainActivity
 
 
     public void touchHfxTransitButton( View view ) {
-        Intent intent = new Intent( MainActivity.this, TwitterActivity.class );
+        Intent intent = new Intent( MainActivity.this, TwitterFragment.class );
         startActivity( intent );
     }
 
