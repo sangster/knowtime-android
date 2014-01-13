@@ -32,7 +32,6 @@ public class MainActivity
         extends Activity
         implements GoogleMap.OnCameraChangeListener, LoaderManager.LoaderCallbacks<HashMap<String, MarkerOptions>>
 {
-
     private GoogleMap mMap;
     private Context mContext;
     public static final LatLng DEFAULT_HALIFAX_LAT_LNG = new LatLng( 44.67600, -63.60800 );

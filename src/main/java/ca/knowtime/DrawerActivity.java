@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import ca.knowtime.fragments.AboutFragment;
 import ca.knowtime.fragments.FavouritesFragment;
+import ca.knowtime.fragments.MapFragment;
 import ca.knowtime.fragments.ShareMeFragment;
 import ca.knowtime.fragments.StopsFragment;
 import ca.knowtime.fragments.TwitterFragment;
@@ -34,6 +35,10 @@ public class DrawerActivity
         mDrawerList = (ListView) findViewById( R.id.left_drawer );
         mDrawerList.setAdapter( new ArrayAdapter<String>( this, R.layout.drawer_item, mPlanetTitles ) );
         mDrawerList.setOnItemClickListener( new DrawerItemClickListener() );
+
+
+        final FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace( R.id.content_frame, new MapFragment() ).commit();
     }
 
 
