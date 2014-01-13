@@ -18,11 +18,6 @@ public class AboutFragment
     }
 
 
-    public void touchBackButton( View view ) {
-        getActivity().finish();
-    }
-
-
     public void touchTwitterButton( View view ) {
 
     }

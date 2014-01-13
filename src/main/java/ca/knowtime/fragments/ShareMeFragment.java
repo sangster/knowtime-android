@@ -91,11 +91,6 @@ public class ShareMeFragment
     }
 
 
-    public void touchBackButton( View view ) {
-        getActivity().finish();
-    }
-
-
     private void startSharing() {
         mOnMyWayButton.setBackgroundResource( R.drawable.stop );
         mIsSharing = true;

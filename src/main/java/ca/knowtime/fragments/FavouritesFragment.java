@@ -22,8 +22,8 @@ import java.util.List;
 public class FavouritesFragment
         extends Fragment
 {
-    TableLayout stopTable;
-    TableLayout routeTable;
+    private TableLayout mStopTable;
+    private TableLayout mRouteTable;
 
 
     @Override
@@ -37,8 +37,8 @@ public class FavouritesFragment
     public View onCreateView( LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState ) {
         final View view = inflater.inflate( R.layout.activity_favourite, container, false );
 
-        stopTable = (TableLayout) view.findViewById( R.id.stopsTable );
-        routeTable = (TableLayout) view.findViewById( R.id.routesTable );
+        mStopTable = (TableLayout) view.findViewById( R.id.stopsTable );
+        mRouteTable = (TableLayout) view.findViewById( R.id.routesTable );
         return view;
     }
 
@@ -64,8 +64,8 @@ public class FavouritesFragment
                     return false;
                 }
             } );
-            stopTable.addView( stopRow, new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT,
-                                                                    ViewGroup.LayoutParams.WRAP_CONTENT ) );
+            mStopTable.addView( stopRow, new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT,
+                                                                     ViewGroup.LayoutParams.WRAP_CONTENT ) );
             TextView stopNumberTextView = (TextView) stopRow.findViewById( R.id.favouriteId );
             stopNumberTextView.setText( stopNumber );
             TextView stopNameTextView = (TextView) stopRow.findViewById( R.id.favouriteDescription );
@@ -108,8 +108,8 @@ public class FavouritesFragment
                     return false;
                 }
             } );
-            routeTable.addView( stopRow, new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT,
-                                                                     ViewGroup.LayoutParams.WRAP_CONTENT ) );
+            mRouteTable.addView( stopRow, new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT,
+                                                                      ViewGroup.LayoutParams.WRAP_CONTENT ) );
             TextView routeNumberTextView = (TextView) stopRow.findViewById( R.id.favouriteId );
             routeNumberTextView.setText( routeNumber );
             TextView routeNameTextView = (TextView) stopRow.findViewById( R.id.favouriteDescription );
@@ -127,10 +127,5 @@ public class FavouritesFragment
                 }
             } );
         }
-    }
-
-
-    public void touchBackButton( View view ) {
-        getActivity().finish();
     }
 }

@@ -15,9 +15,4 @@ public class TwitterFragment
                               final Bundle savedInstanceState ) {
         return inflater.inflate( R.layout.activity_twitter, container, false );
     }
-
-
-    public void touchBackButton( View view ) {
-        getActivity().finish();
-    }
 }
