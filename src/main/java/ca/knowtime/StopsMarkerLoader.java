@@ -50,10 +50,10 @@ public class StopsMarkerLoader
                "current zoom :" + mZoom + "Default zoom:" + MainActivity.DEFAULT_HALIFAX_LAT_LNG_ZOOM );
 
         if( mShowStops && mZoom >= MainActivity.DEFAULT_HALIFAX_LAT_LNG_ZOOM ) {
-            for( String currentStop : markers.keySet() ) {
-                final MarkerOptions marker = markers.get( currentStop );
+            for( final String stop : markers.keySet() ) {
+                final MarkerOptions marker = markers.get( stop );
                 if( isMarkerWithinRange( marker ) ) {
-                    resultMarker.put( currentStop, marker );
+                    resultMarker.put( stop, marker );
                 }
             }
         }

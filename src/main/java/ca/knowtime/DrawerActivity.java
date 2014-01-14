@@ -38,7 +38,6 @@ public class DrawerActivity
         mDrawerList.setAdapter( new ArrayAdapter<String>( this, R.layout.drawer_item, drawerActions ) );
         mDrawerList.setOnItemClickListener( new DrawerItemClickListener() );
 
-
         final FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction().replace( R.id.content_frame, new MapFragment() ).commit();
     }

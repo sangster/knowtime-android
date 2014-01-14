@@ -18,13 +18,12 @@ import ca.knowtime.R;
 import ca.knowtime.RouteMapActivity;
 import ca.knowtime.Stop;
 import ca.knowtime.WebApiService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import ca.knowtime.comm.types.RouteStopTimes;
+import ca.knowtime.comm.types.StopTimePair;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class StopsFragment
@@ -77,39 +76,19 @@ public class StopsFragment
     }
 
 
-    private Date getStopDate( String departTime, SimpleDateFormat formatter, SimpleDateFormat currentTimeFormatter ) {
-        Date returnDate = null;
-        String[] components = departTime.split( ":" );
-        if( components.length >= 2 && Integer.parseInt( components[0] ) >= 24 ) {
-            try {
-                Date tempDate = formatter.parse( currentTimeFormatter.format( new Date() ) + " 00:" + components[1] );
-                returnDate = new Date( tempDate.getTime() + 86400000 );
-            } catch( ParseException e ) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        } else {
-            try {
-                returnDate = formatter.parse( currentTimeFormatter.format( new Date() ) + " " + departTime );
-            } catch( ParseException e ) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        return returnDate;
-    }
-
-
     private void getStops() {
-        Thread thread = new Thread( new Runnable()
+        new Thread( new Runnable()
         {
             @Override
             public void run() {
-                final JSONArray jsonArray = WebApiService.getRouteForIdent( Integer.parseInt( mStopNumber ) );
-                getActivity().runOnUiThread( new GetStopsRunnable( jsonArray ) );
+                try {
+                    List<RouteStopTimes> stopTimes = WebApiService.getRouteStopTimes( Integer.parseInt( mStopNumber ) );
+                    getActivity().runOnUiThread( new GetStopsRunnable( stopTimes ) );
+                } catch( Exception e ) {
+                    throw new RuntimeException( e );
+                }
             }
-        } );
-        thread.start();
+        } ).start();
     }
 
 
@@ -128,93 +107,95 @@ public class StopsFragment
     private class GetStopsRunnable
             implements Runnable
     {
-        private final JSONArray mJsonArray;
+        private final List<RouteStopTimes> mRoutesStopTimes;
 
 
-        public GetStopsRunnable( final JSONArray jsonArray ) {
-            mJsonArray = jsonArray;
+        public GetStopsRunnable( final List<RouteStopTimes> routesStopTimes ) {
+            mRoutesStopTimes = routesStopTimes;
         }
 
 
         @Override
         public void run() {
-            for( int i = 0; i < mJsonArray.length(); i++ ) {
-                try {
-                    final JSONObject routeItem = mJsonArray.getJSONObject( i );
-                    LayoutInflater li = (LayoutInflater) getActivity().getSystemService(
-                            Context.LAYOUT_INFLATER_SERVICE );
-                    View stopRow = li.inflate( R.layout.stopscellview, null );
-                    final String routeId = routeItem.getString( "routeId" );
-                    final String routeNumber = routeItem.getString( "m_shortName" );
-                    stopRow.setOnTouchListener( new OnTouchListener()
-                    {
-                        @Override
-                        public boolean onTouch( View v, MotionEvent event ) {
-                            if( event.getAction() == MotionEvent.ACTION_DOWN ) {
-                                Intent intent = new Intent( getActivity(), RouteMapActivity.class );
-                                intent.putExtra( "ROUTE_NUMBER", routeNumber );
-                                intent.putExtra( "ROUTE_ID", routeId );
-                                startActivity( intent );
-                            }
-                            return false;
-                        }
-                    } );
-                    mStopTable.addView( stopRow, new ViewGroup.LayoutParams( ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                                             ViewGroup.LayoutParams.WRAP_CONTENT ) );
-                    TextView routeNumberTextView = (TextView) stopRow.findViewById( R.id.routenumber );
-                    routeNumberTextView.setText( routeNumber );
-                    TextView routeNameTextView = (TextView) stopRow.findViewById( R.id.routeName );
-                    routeNameTextView.setText( routeItem.getString( "longName" ) );
+            for( final RouteStopTimes routeTimes : mRoutesStopTimes ) {
+                final LayoutInflater li = (LayoutInflater) getActivity().getSystemService(
+                        Context.LAYOUT_INFLATER_SERVICE );
+                final View stopRow = li.inflate( R.layout.stopscellview, null );
+                stopRow.setOnTouchListener( new ShowRouteMapActivity( routeTimes ) );
 
-                    SimpleDateFormat displayFormatter = new SimpleDateFormat( "h:mm", Locale.US );
-                    SimpleDateFormat formatter = new SimpleDateFormat( "yyyy-MM-dd HH:mm", Locale.US );
-                    SimpleDateFormat currentTimeFormatter = new SimpleDateFormat( "yyyy-MM-dd", Locale.US );
+                mStopTable.addView( stopRow, new ViewGroup.LayoutParams( ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                                         ViewGroup.LayoutParams.WRAP_CONTENT ) );
 
-                    JSONArray stopTimes = routeItem.getJSONArray( "stopTimes" );
-                    int counter = -1;
-                    long minDiff = 0;
-                    String departTime = "unknown";
-                    Date currentDate = new Date();
-                    for( int j = 0; j < stopTimes.length(); j++ ) {
-                        JSONObject stopItem = stopTimes.getJSONObject( j );
-                        Date stopDate = getStopDate( stopItem.getString( "departure" ), formatter,
-                                                     currentTimeFormatter );
-                        long diff = stopDate.getTime() - currentDate.getTime();
-                        if( diff > 0 && (minDiff <= 0 || minDiff > diff) ) {
-                            minDiff = diff;
-                            departTime = displayFormatter.format( stopDate );
-                            counter = j;
-                        }
+                ((TextView) stopRow.findViewById( R.id.routenumber )).setText( routeTimes.getShortName() );
+                ((TextView) stopRow.findViewById( R.id.routeName )).setText( routeTimes.getLongName() );
+
+                SimpleDateFormat displayFormatter = new SimpleDateFormat( "h:mm", Locale.US );
+
+                final Date currentDate = new Date();
+                int counter = -1;
+                long minDiff = 0;
+                String departTime = "unknown";
+
+                final List<StopTimePair> stopTimes = routeTimes.getStopTimes();
+                for( int i = 0, s = stopTimes.size(); i < s; ++i ) {
+                    final StopTimePair times = stopTimes.get( i );
+
+                    final Date stopDate = times.getDeparture().forToday();
+                    final long diff = stopDate.getTime() - currentDate.getTime();
+                    if( diff > 0 && (minDiff <= 0 || minDiff > diff) ) {
+                        minDiff = diff;
+                        departTime = displayFormatter.format( stopDate );
+                        counter = i;
                     }
-                    if( minDiff != 0 ) {
-                        TextView time1 = (TextView) stopRow.findViewById( R.id.time1 );
-                        TextView eta1 = (TextView) stopRow.findViewById( R.id.eta1 );
-                        time1.setText( departTime );
-                        eta1.setText( minDiff / 60000 + " min" );
+                }
+
+                if( minDiff != 0 ) {
+                    ((TextView) stopRow.findViewById( R.id.time1 )).setText( departTime );
+                    ((TextView) stopRow.findViewById( R.id.eta1 )).setText( minDiff / 60000 + " min" );
+                }
+                if( counter + 1 < stopTimes.size() || counter != -1 ) {
+                    final Date nextStopDate = stopTimes.get( counter + 1 ).getDeparture().forToday();
+
+                    ((TextView) stopRow.findViewById( R.id.time2 )).setText( displayFormatter.format( nextStopDate ) );
+                    ((TextView) stopRow.findViewById( R.id.eta2 )).setText(
+                            (nextStopDate.getTime() - currentDate.getTime()) / 60000 + " min" );
+
+                    if( counter + 2 < stopTimes.size() ) {
+                        Date nextNextStopDate = stopTimes.get( counter + 2 ).getDeparture().forToday();
+
+                        ((TextView) stopRow.findViewById( R.id.time3 )).setText(
+                                displayFormatter.format( nextNextStopDate ) );
+                        ((TextView) stopRow.findViewById( R.id.eta3 )).setText(
+                                (nextNextStopDate.getTime() - currentDate.getTime()) / 60000 + " min" );
                     }
-                    if( counter + 1 < stopTimes.length() || counter != -1 ) {
-                        Date nextStopDate = getStopDate(
-                                stopTimes.getJSONObject( counter + 1 ).getString( "departure" ), formatter,
-                                currentTimeFormatter );
-                        TextView time2 = (TextView) stopRow.findViewById( R.id.time2 );
-                        TextView eta2 = (TextView) stopRow.findViewById( R.id.eta2 );
-                        time2.setText( displayFormatter.format( nextStopDate ) );
-                        eta2.setText( (nextStopDate.getTime() - currentDate.getTime()) / 60000 + " min" );
-                        if( counter + 2 < stopTimes.length() ) {
-                            Date nextNextStopDate = getStopDate(
-                                    stopTimes.getJSONObject( counter + 2 ).getString( "departure" ), formatter,
-                                    currentTimeFormatter );
-                            TextView time3 = (TextView) stopRow.findViewById( R.id.time3 );
-                            TextView eta3 = (TextView) stopRow.findViewById( R.id.eta3 );
-                            time3.setText( displayFormatter.format( nextNextStopDate ) );
-                            eta3.setText( (nextNextStopDate.getTime() - currentDate.getTime()) / 60000 + " min" );
-                        }
-                    }
-                } catch( JSONException e ) {
-                    e.printStackTrace();
                 }
             }
+
             mProgressBar.setVisibility( View.INVISIBLE );
+        }
+
+
+        private class ShowRouteMapActivity
+                implements OnTouchListener
+        {
+            private final RouteStopTimes mStopTimes;
+
+
+            public ShowRouteMapActivity( final RouteStopTimes stopTimes ) {
+                mStopTimes = stopTimes;
+            }
+
+
+            @Override
+            public boolean onTouch( View v, MotionEvent event ) {
+                if( event.getAction() == MotionEvent.ACTION_DOWN ) {
+                    Intent intent = new Intent( getActivity(), RouteMapActivity.class );
+                    intent.putExtra( "ROUTE_NUMBER", mStopTimes.getShortName() );
+                    intent.putExtra( "ROUTE_ID", mStopTimes.getRouteId().toString() );
+                    startActivity( intent );
+                }
+                return false;
+            }
         }
     }
 }

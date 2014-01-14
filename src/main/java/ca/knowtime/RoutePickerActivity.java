@@ -12,6 +12,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TableLayout;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class RoutePickerActivity
         extends Activity
 {
@@ -35,7 +38,7 @@ public class RoutePickerActivity
 
 
     private void getRoutes() {
-        final Object[] routes = WebApiService.getRoutesArray();
+        final List<String> routes = WebApiService.getRoutes();
         runOnUiThread( new Runnable()
         {
             @Override
@@ -46,66 +49,30 @@ public class RoutePickerActivity
     }
 
 
-    private void parseRoutes( Object[] routes ) {
-        for( int i = 0; i < routes.length; i += 6 ) {
+    private void parseRoutes( List<String> routes ) {
+        for( int i = 0; i < routes.size(); i += 6 ) {
             LayoutInflater li = (LayoutInflater) getSystemService( Context.LAYOUT_INFLATER_SERVICE );
             View routeRow = li.inflate( R.layout.routeselectorcell, null );
             routeSelectionTable.addView( routeRow, new ViewGroup.LayoutParams( ViewGroup.LayoutParams.WRAP_CONTENT,
                                                                                ViewGroup.LayoutParams.WRAP_CONTENT ) );
-            if( i < routes.length ) {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton1 );
-                String routeNumber = (String) routes[i];
-                createButton( stopButton, routeNumber );
-                stopButton.setVisibility( View.VISIBLE );
-            } else {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton1 );
-                stopButton.setVisibility( View.INVISIBLE );
+
+            final List<Integer> buttons = Arrays.asList( R.id.selectorButton1, R.id.selectorButton2,
+                                                         R.id.selectorButton3, R.id.selectorButton4,
+                                                         R.id.selectorButton5, R.id.selectorButton6 );
+
+            for( int j = 0, s = buttons.size(); j < s; ++j ) {
+                setButtonVisible( routes, i + j, (Button) routeRow.findViewById( buttons.get( j ) ) );
             }
-            if( i + 1 < routes.length ) {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton2 );
-                String routeNumber = (String) routes[i + 1];
-                createButton( stopButton, routeNumber );
-                stopButton.setVisibility( View.VISIBLE );
-            } else {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton2 );
-                stopButton.setVisibility( View.INVISIBLE );
-            }
-            if( i + 2 < routes.length ) {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton3 );
-                String routeNumber = (String) routes[i + 2];
-                createButton( stopButton, routeNumber );
-                stopButton.setVisibility( View.VISIBLE );
-            } else {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton3 );
-                stopButton.setVisibility( View.INVISIBLE );
-            }
-            if( i + 3 < routes.length ) {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton4 );
-                String routeNumber = (String) routes[i + 3];
-                createButton( stopButton, routeNumber );
-                stopButton.setVisibility( View.VISIBLE );
-            } else {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton4 );
-                stopButton.setVisibility( View.INVISIBLE );
-            }
-            if( i + 4 < routes.length ) {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton5 );
-                String routeNumber = (String) routes[i + 4];
-                createButton( stopButton, routeNumber );
-                stopButton.setVisibility( View.VISIBLE );
-            } else {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton5 );
-                stopButton.setVisibility( View.INVISIBLE );
-            }
-            if( i + 5 < routes.length ) {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton6 );
-                String routeNumber = (String) routes[i + 5];
-                createButton( stopButton, routeNumber );
-                stopButton.setVisibility( View.VISIBLE );
-            } else {
-                Button stopButton = (Button) routeRow.findViewById( R.id.selectorButton6 );
-                stopButton.setVisibility( View.INVISIBLE );
-            }
+        }
+    }
+
+
+    private void setButtonVisible( final List<String> routes, final int index, final Button button ) {
+        if( index < routes.size() ) {
+            createButton( button, routes.get( index ) );
+            button.setVisibility( View.VISIBLE );
+        } else {
+            button.setVisibility( View.INVISIBLE );
         }
     }
 

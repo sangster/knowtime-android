@@ -19,7 +19,7 @@ public class LocationShare
 
     public void startLocationShare()
             throws IOException {
-        WebApiService.createNewUser( 1 );
+        WebApiService.createUser( 1 );
     }
 
 

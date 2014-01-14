@@ -4,6 +4,8 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import ca.knowtime.comm.KnowTime;
 import ca.knowtime.comm.KnowTimeAccess;
+import ca.knowtime.comm.types.RouteName;
+import ca.knowtime.comm.types.RouteStopTimes;
 import ca.knowtime.comm.types.User;
 import ca.knowtime.map.StopMarker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -23,52 +25,43 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 /** Created by aeisses on 2013-11-19. */
 public class WebApiService
 {
     private static final String SANGSTERBASEURL = "http://api.knowtime.ca/alpha_1/";
     private static final String ROUTES = "routes/";
-    private static final String NAMES = "names";
     private static final String SHORTS = "short:";
     private static final String PATHS = "paths/";
-    private static final String STOPTIME = "stoptimes/";
     private static final String HEADSIGNS = "headsigns/";
     private static final String ESTIMATE = "estimates/";
-    private static final String POLLRATE = "pollrate";
-
-    private static JSONArray stopsJSONArray;
 
 
     private static final KnowTimeAccess KNOW_TIME = KnowTime.connect( URI.create( SANGSTERBASEURL ), new RestCache() );
 
 
     public static void fetchAllRoutes() {
-        Thread thread = new Thread( new Runnable()
+        new Thread( new Runnable()
         {
             @Override
             public void run() {
                 try {
-                    JSONArray routesJSONArray = getJSONArrayFromUrl( SANGSTERBASEURL + ROUTES + NAMES );
-                    for( int i = 0; i < routesJSONArray.length(); i++ ) {
-                        JSONObject routeJSON = routesJSONArray.getJSONObject( i );
-                        Route route = new Route( routeJSON.getString( "longName" ),
-                                                 routeJSON.getString( "m_shortName" ) );
+                    for( final RouteName routeName : KNOW_TIME.routeNames() ) {
+                        final Route route = new Route( routeName.getLongName(), routeName.getShortName() );
                         if( DatabaseHandler.getInstance().getRoute( route.getShortName() ) == null ) {
                             DatabaseHandler.getInstance().addRoute( route );
                         }
                     }
-                } catch( Exception e ) {
-                    e.printStackTrace();
+                } catch( final Exception e ) {
+                    throw new RuntimeException( e );
                 }
             }
-        } );
-        thread.start();
+        } ).start();
     }
 
 
@@ -92,25 +85,9 @@ public class WebApiService
     }
 
 
-    public static JSONObject getPollRate() {
-        return getJSONObjectFromUrl( SANGSTERBASEURL + POLLRATE );
-    }
-
-
-    public static User createNewUser( final int routeId )
-            throws IOException {
-        return KNOW_TIME.createUser( routeId );
-    }
-
-
-    public static JSONArray getRouteForIdent( final int ident ) {
-        try {
-            return getJSONArrayFromUrl(
-                    SANGSTERBASEURL + STOPTIME + ident + "/" + DateFormat.format( "yyyy-MM-dd", new Date() ) );
-        } catch( Exception e ) {
-            e.printStackTrace();
-        }
-        return null;
+    public static List<RouteStopTimes> getRouteStopTimes( final int stopNumber )
+            throws IOException, JSONException {
+        return KNOW_TIME.routesStopTimes( stopNumber, new Date() );
     }
 
 
@@ -263,25 +240,28 @@ public class WebApiService
     }
 
 
-    public static Object[] getRoutesArray() {
-        Vector<String> returnVector = new Vector<String>();
+    public static List<String> getRoutes() {
+        List<String> list = new ArrayList<String>();
+
         List<Route> routes = DatabaseHandler.getInstance().getAllRoutes();
-        for( int i = 0; i < routes.size(); i++ ) {
-            Route route = (Route) routes.get( i );
+
+        for( final Route route : routes ) {
             if( WebApiService.isStringInt( route.getShortName() ) ) {
-                returnVector.add( routes.get( i ).getShortName() );
+                list.add( route.getShortName() );
             }
         }
-        return returnVector.toArray();
+        return list;
     }
 
 
-    public static List<Stop> getStopsList() {
-        return DatabaseHandler.getInstance().getAllStops();
+    public static User createUser( final int routeId )
+            throws IOException {
+        return KNOW_TIME.createUser( routeId );
     }
 
 
-    public static JSONArray getStopsJSONArray() {
-        return stopsJSONArray;
+    public static float pollRate()
+            throws IOException, JSONException {
+        return KNOW_TIME.pollRate();
     }
 }

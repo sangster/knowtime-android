@@ -18,8 +18,6 @@ import ca.knowtime.R;
 import ca.knowtime.RoutePickerActivity;
 import ca.knowtime.WebApiService;
 import ca.knowtime.comm.types.User;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Date;
@@ -33,7 +31,7 @@ public class ShareMeFragment
     private Boolean mIsSharing = false;
     private User mUser;
     private final Handler mHandler = new Handler();
-    private int mPollRate;
+    private float mPollRate;
     private ImageView mSendingLineImage;
     private Date mStartTime;
     private int mLoopCounter;
@@ -65,7 +63,7 @@ public class ShareMeFragment
                     }
                     mLoopCounter = 0;
                 }
-                mHandler.postDelayed( mUpdateUI, (mPollRate * 1000) / 3 ); // 1 second
+                mHandler.postDelayed( mUpdateUI, (long) (mPollRate * 1000 / 3) ); // 1 second
             }
         }
     };
@@ -120,17 +118,12 @@ public class ShareMeFragment
             @Override
             public void run() {
                 try {
-                    mUser = WebApiService.createNewUser( Integer.parseInt( route ) );
+                    mUser = WebApiService.createUser( Integer.parseInt( route ) );
+                    mPollRate = WebApiService.pollRate();
 
-                    final JSONObject jsonPollRate = WebApiService.getPollRate();
-                    try {
-                        mPollRate = jsonPollRate.getInt( "rate" );
-                    } catch( JSONException e ) {
-                        e.printStackTrace();
-                    }
                     mStartTime = new Date();
                     mHandler.post( mUpdateUI );
-                } catch( IOException e ) {
+                } catch( Exception e ) {
                     stopSharing();
                 }
             }

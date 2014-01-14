@@ -67,32 +67,32 @@ public class MapFragment
         super.onActivityCreated( savedInstanceState );
 
         WebApiService.fetchAllRoutes();
+        if( mMap != null ) {
+            return;
+        }
 
-        if( mMap == null ) {
-            mMap = ((com.google.android.gms.maps.MapFragment) getFragmentManager().findFragmentById(
-                    R.id.map1 )).getMap();
+        mMap = ((com.google.android.gms.maps.MapFragment) getFragmentManager().findFragmentById( R.id.map1 )).getMap();
 
-            if( mMap != null ) {
-                mMap.setMyLocationEnabled( true );
+        if( mMap != null ) {
+            mMap.setMyLocationEnabled( true );
 
-                final LocationManager locationManager = (LocationManager) getActivity().getSystemService(
-                        Context.LOCATION_SERVICE );
-                final String locationProvider = LocationManager.NETWORK_PROVIDER;
-                final Location lastKnownLocation = locationManager.getLastKnownLocation( locationProvider );
+            final LocationManager locationManager = (LocationManager) getActivity().getSystemService(
+                    Context.LOCATION_SERVICE );
+            final String locationProvider = LocationManager.NETWORK_PROVIDER;
+            final Location lastKnownLocation = locationManager.getLastKnownLocation( locationProvider );
 
-                mMap.moveCamera( CameraUpdateFactory.newLatLngZoom(
-                        new LatLng( lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude() ),
-                        DEFAULT_HALIFAX_LAT_LNG_ZOOM ) );
+            mMap.moveCamera( CameraUpdateFactory.newLatLngZoom(
+                    new LatLng( lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude() ),
+                    DEFAULT_HALIFAX_LAT_LNG_ZOOM ) );
 
-                mMap.setOnCameraChangeListener( new GoogleMap.OnCameraChangeListener()
-                {
-                    @Override
-                    public void onCameraChange( final CameraPosition cameraPosition ) {
-                        refreshBusStopMarkers( cameraPosition );
-                    }
-                } );
-                mMap.setOnInfoWindowClickListener( new InfoWindowClickListener() );
-            }
+            mMap.setOnCameraChangeListener( new GoogleMap.OnCameraChangeListener()
+            {
+                @Override
+                public void onCameraChange( final CameraPosition cameraPosition ) {
+                    refreshBusStopMarkers( cameraPosition );
+                }
+            } );
+            mMap.setOnInfoWindowClickListener( new InfoWindowClickListener() );
         }
     }
 
