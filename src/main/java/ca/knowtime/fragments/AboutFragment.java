@@ -14,24 +14,24 @@ public class AboutFragment
     @Override
     public View onCreateView( final LayoutInflater inflater, final ViewGroup container,
                               final Bundle savedInstanceState ) {
-        return inflater.inflate( R.layout.activity_about, container, false );
+        final View view = inflater.inflate( R.layout.activity_about, container, false );
+
+        view.findViewById( R.id.twitterButton ).setOnClickListener( new EmailOnClickListener() );
+
+        return view;
     }
 
 
-    public void touchTwitterButton( View view ) {
+    private class EmailOnClickListener
+            implements View.OnClickListener
+    {
+        @Override
+        public void onClick( final View v ) {
+            final Intent email = new Intent( Intent.ACTION_SEND );
+            email.setType( "text/html" );
+            email.putExtra( Intent.EXTRA_EMAIL, new String[]{ "feedback@knowtime.ca" } );
 
-    }
-
-
-    public void touchFacebookButton( View view ) {
-
-    }
-
-
-    public void touchFeedbackButton( View view ) {
-        Intent email = new Intent( android.content.Intent.ACTION_SEND );
-        email.setType( "text/html" );
-        email.putExtra( Intent.EXTRA_EMAIL, new String[]{ "feedback@knowtime.ca" } );
-        startActivity( Intent.createChooser( email, "Choose an Email client:" ) );
+            getActivity().startActivity( Intent.createChooser( email, "Choose an Email client:" ) );
+        }
     }
 }

@@ -1,54 +1,51 @@
 package ca.knowtime;
 
-import android.location.Location;
 import android.text.format.DateFormat;
 import android.util.Log;
-
-import org.apache.http.Header;
+import ca.knowtime.comm.KnowTime;
+import ca.knowtime.comm.KnowTimeAccess;
+import ca.knowtime.comm.types.User;
+import ca.knowtime.map.StopMarker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 /** Created by aeisses on 2013-11-19. */
 public class WebApiService
 {
     private static final String SANGSTERBASEURL = "http://api.knowtime.ca/alpha_1/";
-    private static final String STOPS = "stops";
     private static final String ROUTES = "routes/";
     private static final String NAMES = "names";
     private static final String SHORTS = "short:";
     private static final String PATHS = "paths/";
     private static final String STOPTIME = "stoptimes/";
     private static final String HEADSIGNS = "headsigns/";
-    private static final String USERS = "users/";
-    private static final String NEW = "new/";
     private static final String ESTIMATE = "estimates/";
     private static final String POLLRATE = "pollrate";
 
     private static JSONArray stopsJSONArray;
-    private static Thread locationsThread;
+
+
+    private static final KnowTimeAccess KNOW_TIME = KnowTime.connect( URI.create( SANGSTERBASEURL ), new RestCache() );
 
 
     public static void fetchAllRoutes() {
@@ -75,39 +72,13 @@ public class WebApiService
     }
 
 
-    public static HashMap<String, MarkerOptions> fetchAllStops() {
-        HashMap<String, MarkerOptions> hashMap = new HashMap<String, MarkerOptions>();
-
+    public static Map<String, MarkerOptions> fetchAllStops() {
         try {
-            MarkerOptions markerStops;
-            stopsJSONArray = getJSONArrayFromUrl( SANGSTERBASEURL + STOPS );
-            for( int i = 0; i < stopsJSONArray.length(); i++ ) {
-                JSONObject stopJSON = stopsJSONArray.getJSONObject( i );
-                JSONObject locationJSON = stopJSON.getJSONObject( "location" );
-                Stop stop = new Stop( stopJSON.getString( "stopNumber" ), stopJSON.getString( "name" ),
-                                      Double.parseDouble( locationJSON.getString( "lat" ) ),
-                                      Double.parseDouble( locationJSON.getString( "lng" ) ) );
-                if( DatabaseHandler.getInstance().getStop( stop.getCode() ) == null ) {
-                    DatabaseHandler.getInstance().addStop( stop );
-                }
-                markerStops = new MarkerOptions();
-
-                markerStops.draggable( false );
-                markerStops.anchor( .6f, .6f );
-
-                markerStops.icon( BitmapDescriptorFactory.fromResource( R.drawable.bus_stop ) );
-                markerStops.position( new LatLng( stop.getLat(), stop.getLng() ) );
-
-                markerStops.snippet( stop.getCode() );
-                markerStops.title( stop.getName() );
-
-                // Adding marker to the result HashMap.
-                hashMap.put( stop.getCode(), markerStops );
-            }
+            return StopMarker.stopMarkersMap( KNOW_TIME.stops() );
         } catch( Exception e ) {
             e.printStackTrace();
+            return Collections.emptyMap();
         }
-        return hashMap;
     }
 
 
@@ -116,8 +87,8 @@ public class WebApiService
             return getJSONArrayFromUrl( SANGSTERBASEURL + ESTIMATE + SHORTS + routeId );
         } catch( Exception e ) {
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
 
@@ -126,55 +97,9 @@ public class WebApiService
     }
 
 
-    public static void sendLocationToServer( final String locationURL, final Location location ) {
-        locationsThread = new Thread( new Runnable()
-        {
-            @Override
-            public void run() {
-                try {
-                    HttpClient client = new DefaultHttpClient();
-                    HttpPost post = new HttpPost( locationURL );
-                    post.setHeader( "Accept", "application/json" );
-                    post.setHeader( "Content-type", "application/json" );
-                    JSONObject jsonParam = new JSONObject();
-                    jsonParam.put( "lat", location.getLatitude() );
-                    jsonParam.put( "lng", location.getLongitude() );
-                    StringEntity se = new StringEntity( jsonParam.toString() );
-                    post.setEntity( se );
-                    HttpResponse responsePost = client.execute( post );
-                    if( responsePost.getStatusLine().getStatusCode() != 200 ) {
-                        return;
-                    }
-                } catch( Exception e ) {
-                    e.printStackTrace();
-                }
-            }
-        } );
-        locationsThread.start();
-    }
-
-
-    public static String createNewUser( final int routeId ) {
-        String returnString = "";
-        try {
-            HttpClient client = new DefaultHttpClient();
-            HttpPost post = new HttpPost( SANGSTERBASEURL + USERS + NEW + routeId );
-            post.setHeader( "Content-type", "application/json" );
-            HttpResponse responsePOST = client.execute( post );
-            if( responsePOST.getStatusLine().getStatusCode() == 201 ) {
-                Header[] h = responsePOST.getAllHeaders();
-                for( int i = 0; i < h.length; i++ ) {
-                    if( h[i].getName().equals( "Location" ) ) {
-                        returnString = h[i].getValue().replaceAll( "buserver", "api" );
-                    }
-                }
-            } else {
-                returnString = "";
-            }
-        } catch( Exception e ) {
-            e.printStackTrace();
-        }
-        return returnString;
+    public static User createNewUser( final int routeId )
+            throws IOException {
+        return KNOW_TIME.createUser( routeId );
     }
 
 

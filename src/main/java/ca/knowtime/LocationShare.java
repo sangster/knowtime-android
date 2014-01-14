@@ -4,6 +4,8 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
+import java.io.IOException;
+
 public class LocationShare
         extends IntentService
 {
@@ -15,7 +17,8 @@ public class LocationShare
     }
 
 
-    public void startLocationShare() {
+    public void startLocationShare()
+            throws IOException {
         WebApiService.createNewUser( 1 );
     }
 

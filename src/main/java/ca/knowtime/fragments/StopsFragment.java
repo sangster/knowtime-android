@@ -30,21 +30,29 @@ import java.util.Locale;
 public class StopsFragment
         extends Fragment
 {
-    private String mStopNumber = "";
-    private String mStopName = "";
+    private String mStopNumber;
+    private String mStopName;
     private ProgressBar mProgressBar;
     private TableLayout mStopTable;
     private Stop mStop;
     private ImageButton mFavouriteButton;
 
 
+    public StopsFragment() {
+        this( null, null );
+    }
+
+
+    public StopsFragment( final String stopNumber, final String stopName ) {
+        mStopNumber = stopNumber;
+        mStopName = stopName;
+    }
+
+
     @Override
     public void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        Bundle extras = getActivity().getIntent().getExtras();
-        if( extras != null ) {
-            mStopNumber = extras.getString( "STOP_NUMBER" );
-            mStopName = extras.getString( "STOP_NAME" );
+        if( mStopNumber != null && mStopName != null ) {
             mStop = DatabaseHandler.getInstance( getActivity() ).getStop( mStopNumber );
         }
         getStops();

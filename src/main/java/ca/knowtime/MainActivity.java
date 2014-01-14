@@ -28,10 +28,11 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity
         extends Activity
-        implements GoogleMap.OnCameraChangeListener, LoaderManager.LoaderCallbacks<HashMap<String, MarkerOptions>>
+        implements GoogleMap.OnCameraChangeListener, LoaderManager.LoaderCallbacks<Map<String, MarkerOptions>>
 {
     private GoogleMap mMap;
     private Context mContext;
@@ -80,7 +81,7 @@ public class MainActivity
     @Override
     public boolean onCreateOptionsMenu( Menu menu ) {
         // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate( R.menu.main, menu );
+        //        getMenuInflater().inflate( R.menu.main, menu );
         return true;
     }
 
@@ -92,7 +93,7 @@ public class MainActivity
 
 
     @Override
-    public Loader<HashMap<String, MarkerOptions>> onCreateLoader( final int id, final Bundle position ) {
+    public Loader<Map<String, MarkerOptions>> onCreateLoader( final int id, final Bundle position ) {
         setStopMarkerProgressBar( true );
         return new StopsMarkerLoader( mContext, position.getDouble( "bottomLat" ), position.getDouble( "bottomLog" ),
                                       position.getDouble( "topLat" ), position.getDouble( "topLog" ),
@@ -101,19 +102,18 @@ public class MainActivity
 
 
     @Override
-    public void onLoadFinished( Loader<HashMap<String, MarkerOptions>> loader, HashMap<String, MarkerOptions> marker ) {
+    public void onLoadFinished( Loader<Map<String, MarkerOptions>> loader, Map<String, MarkerOptions> marker ) {
         setStopMarkerProgressBar( false );
         addItemsToMap( marker );
     }
 
 
     @Override
-    public void onLoaderReset( Loader<HashMap<String, MarkerOptions>> hashMapLoader ) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void onLoaderReset( Loader<Map<String, MarkerOptions>> hashMapLoader ) {
     }
 
 
-    private void addItemsToMap( HashMap<String, MarkerOptions> result ) {
+    private void addItemsToMap( Map<String, MarkerOptions> result ) {
         final Object[] currentStops = busStopMarkers.keySet().toArray();
         Marker marker;
         for( Object currentStop : currentStops ) {

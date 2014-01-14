@@ -1,6 +1,7 @@
 package ca.knowtime.fragments;
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -56,10 +57,10 @@ public class FavouritesFragment
                 @Override
                 public boolean onTouch( View v, MotionEvent event ) {
                     if( event.getAction() == MotionEvent.ACTION_DOWN ) {
-                        Intent intent = new Intent( getActivity(), StopsFragment.class );
-                        intent.putExtra( "STOP_NUMBER", stopNumber );
-                        intent.putExtra( "STOP_NAME", stopName );
-                        startActivity( intent );
+                        final FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                        transaction.addToBackStack( null );
+                        transaction.replace( R.id.content_frame, new StopsFragment( stopNumber, stopName ) );
+                        transaction.commit();
                     }
                     return false;
                 }

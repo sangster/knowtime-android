@@ -2,9 +2,9 @@ package ca.knowtime.fragments;
 
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.LoaderManager;
 import android.content.Context;
-import android.content.Intent;
 import android.content.Loader;
 import android.location.Location;
 import android.location.LocationManager;
@@ -27,6 +27,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class MapFragment
         extends Fragment
@@ -54,10 +55,17 @@ public class MapFragment
     @Override
     public View onCreateView( final LayoutInflater inflater, final ViewGroup container,
                               final Bundle savedInstanceState ) {
-        View view = inflater.inflate( R.layout.activity_main, container, false );
-
+        final View view = inflater.inflate( R.layout.activity_main, container, false );
         mMapMarkerProgressBar = (ProgressBar) view.findViewById( R.id.mapMarkerProgressBar );
         mMapMarkerProgressBarText = (TextView) view.findViewById( R.id.mapMarkerProgressBarText );
+        return view;
+    }
+
+
+    @Override
+    public void onActivityCreated( final Bundle savedInstanceState ) {
+        super.onActivityCreated( savedInstanceState );
+
         WebApiService.fetchAllRoutes();
 
         if( mMap == null ) {
@@ -67,10 +75,11 @@ public class MapFragment
             if( mMap != null ) {
                 mMap.setMyLocationEnabled( true );
 
-                LocationManager locationManager = (LocationManager) getActivity().getSystemService(
+                final LocationManager locationManager = (LocationManager) getActivity().getSystemService(
                         Context.LOCATION_SERVICE );
-                String locationProvider = LocationManager.NETWORK_PROVIDER;
-                Location lastKnownLocation = locationManager.getLastKnownLocation( locationProvider );
+                final String locationProvider = LocationManager.NETWORK_PROVIDER;
+                final Location lastKnownLocation = locationManager.getLastKnownLocation( locationProvider );
+
                 mMap.moveCamera( CameraUpdateFactory.newLatLngZoom(
                         new LatLng( lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude() ),
                         DEFAULT_HALIFAX_LAT_LNG_ZOOM ) );
@@ -85,8 +94,6 @@ public class MapFragment
                 mMap.setOnInfoWindowClickListener( new InfoWindowClickListener() );
             }
         }
-
-        return view;
     }
 
 
@@ -116,18 +123,19 @@ public class MapFragment
     {
         @Override
         public void onInfoWindowClick( Marker marker ) {
-            Intent intent = new Intent( getActivity(), StopsFragment.class );
-            intent.putExtra( "STOP_NUMBER", marker.getSnippet() );
-            intent.putExtra( "STOP_NAME", marker.getTitle() );
-            startActivity( intent );
+            final FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction.addToBackStack( null );
+            transaction.replace( R.id.content_frame, new StopsFragment( marker.getSnippet(), marker.getTitle() ) );
+            transaction.commit();
         }
     }
 
+
     private class MapItemsLoaderCallbacks
-            implements LoaderManager.LoaderCallbacks<HashMap<String, MarkerOptions>>
+            implements LoaderManager.LoaderCallbacks<Map<String, MarkerOptions>>
     {
         @Override
-        public Loader<HashMap<String, MarkerOptions>> onCreateLoader( final int id, final Bundle args ) {
+        public Loader<Map<String, MarkerOptions>> onCreateLoader( final int id, final Bundle args ) {
             setStopMarkerProgressBar( true );
             return new StopsMarkerLoader( mContext, args.getDouble( "bottomLat" ), args.getDouble( "bottomLog" ),
                                           args.getDouble( "topLat" ), args.getDouble( "topLog" ),
@@ -136,14 +144,14 @@ public class MapFragment
 
 
         @Override
-        public void onLoadFinished( final Loader<HashMap<String, MarkerOptions>> loader,
-                                    final HashMap<String, MarkerOptions> marker ) {
+        public void onLoadFinished( final Loader<Map<String, MarkerOptions>> loader,
+                                    final Map<String, MarkerOptions> marker ) {
             setStopMarkerProgressBar( false );
             addItemsToMap( marker );
         }
 
 
-        private void addItemsToMap( HashMap<String, MarkerOptions> result ) {
+        private void addItemsToMap( Map<String, MarkerOptions> result ) {
             final Object[] currentStops = mBusStopMarkers.keySet().toArray();
             Marker marker;
             for( Object currentStop : currentStops ) {
@@ -165,7 +173,7 @@ public class MapFragment
 
 
         @Override
-        public void onLoaderReset( final Loader<HashMap<String, MarkerOptions>> loader ) {
+        public void onLoaderReset( final Loader<Map<String, MarkerOptions>> loader ) {
         }
 
 

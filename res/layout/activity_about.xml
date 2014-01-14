@@ -45,8 +45,7 @@
       android:layout_height="wrap_content"
       android:layout_weight="1"
       android:background="@drawable/twitter_button"
-      android:contentDescription="@string/twitter_button"
-      android:onClick="touchTwitterButton" />
+      android:contentDescription="@string/twitter_button" />
 
     <ImageButton
       android:id="@+id/facebookButton"
@@ -54,8 +53,7 @@
       android:layout_height="wrap_content"
       android:layout_weight="1"
       android:background="@drawable/facebook_button"
-      android:contentDescription="@string/facebook_button"
-      android:onClick="touchFacebookButton" />
+      android:contentDescription="@string/facebook_button" />
 
     <ImageButton
       android:id="@+id/feedbackButton"
@@ -63,8 +61,7 @@
       android:layout_height="wrap_content"
       android:layout_weight="1"
       android:background="@drawable/feedback_button"
-      android:contentDescription="@string/feedback_button"
-      android:onClick="touchFeedbackButton" />
+      android:contentDescription="@string/feedback_button" />
   </LinearLayout>
 
 </LinearLayout>

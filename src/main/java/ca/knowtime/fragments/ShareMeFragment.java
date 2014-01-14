@@ -17,9 +17,11 @@ import android.widget.ImageView;
 import ca.knowtime.R;
 import ca.knowtime.RoutePickerActivity;
 import ca.knowtime.WebApiService;
+import ca.knowtime.comm.types.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Date;
 
 public class ShareMeFragment
@@ -29,7 +31,7 @@ public class ShareMeFragment
     private ImageView mConnectToServerImage;
     private ImageView mSendingImage;
     private Boolean mIsSharing = false;
-    private String mLocationUrl;
+    private User mUser;
     private final Handler mHandler = new Handler();
     private int mPollRate;
     private ImageView mSendingLineImage;
@@ -56,7 +58,11 @@ public class ShareMeFragment
                     mLoopCounter++;
                 } else {
                     mSendingLineImage.setImageResource( R.drawable.sending3 );
-                    shareMyLocation();
+                    try {
+                        shareMyLocation();
+                    } catch( IOException e ) {
+                        throw new RuntimeException( e );
+                    }
                     mLoopCounter = 0;
                 }
                 mHandler.postDelayed( mUpdateUI, (mPollRate * 1000) / 3 ); // 1 second
@@ -68,7 +74,6 @@ public class ShareMeFragment
     @Override
     public void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
-        mLocationUrl = "";
     }
 
 
@@ -110,12 +115,13 @@ public class ShareMeFragment
 
 
     private void createNewUser( final String route ) {
-        Thread thread = new Thread( new Runnable()
+        new Thread( new Runnable()
         {
             @Override
             public void run() {
-                mLocationUrl = WebApiService.createNewUser( Integer.parseInt( route ) );
-                if( !mLocationUrl.equals( "" ) ) {
+                try {
+                    mUser = WebApiService.createNewUser( Integer.parseInt( route ) );
+
                     final JSONObject jsonPollRate = WebApiService.getPollRate();
                     try {
                         mPollRate = jsonPollRate.getInt( "rate" );
@@ -124,34 +130,21 @@ public class ShareMeFragment
                     }
                     mStartTime = new Date();
                     mHandler.post( mUpdateUI );
-                } else {
+                } catch( IOException e ) {
                     stopSharing();
                 }
             }
-        } );
-        thread.start();
+        } ).start();
     }
 
 
-    private void shareMyLocation() {
+    private void shareMyLocation()
+            throws IOException {
         LocationManager locationManager = (LocationManager) getActivity().getSystemService( Context.LOCATION_SERVICE );
-        String locationProvider = LocationManager.NETWORK_PROVIDER;
-        Location lastKnownLocation = locationManager.getLastKnownLocation( locationProvider );
-        WebApiService.sendLocationToServer( mLocationUrl, lastKnownLocation );
-    }
+        Location loc = locationManager.getLastKnownLocation( LocationManager.NETWORK_PROVIDER );
 
-
-    @Override
-    public void onActivityResult( int requestCode, int resultCode, Intent data ) {
-        super.onActivityResult( requestCode, resultCode, data );
-        //        if( requestCode == 1 && resultCode == RESULT_OK && data != null ) {
-        //            String routeNumber = data.getStringExtra( "routeNumber" );
-        //            if( Integer.parseInt( routeNumber ) == -1 ) {
-        //                stopSharing();
-        //            } else {
-        //                createNewUser( routeNumber );
-        //            }
-        //        }
+        mUser.postLocation(
+                new ca.knowtime.comm.types.Location( (float) loc.getLatitude(), (float) loc.getLongitude() ) );
     }
 
 
@@ -160,21 +153,18 @@ public class ShareMeFragment
     {
         @Override
         public boolean onTouch( View v, MotionEvent event ) {
-            if( event.getAction() == MotionEvent.ACTION_DOWN ) {
-                if( mIsSharing ) {
-                    mOnMyWayButton.setBackgroundResource( R.drawable.onmywaybutton );
-                } else {
-                    mOnMyWayButton.setBackgroundResource( R.drawable.stop );
-                }
-            }
-            if( event.getAction() == MotionEvent.ACTION_UP ) {
-                if( mIsSharing ) {
-                    stopSharing();
-                } else {
-                    Intent intent = new Intent( getActivity(), RoutePickerActivity.class );
-                    startActivityForResult( intent, 1 );
-                    startSharing();
-                }
+            switch( event.getAction() ) {
+                case MotionEvent.ACTION_DOWN:
+                    mOnMyWayButton.setBackgroundResource( mIsSharing ? R.drawable.onmywaybutton : R.drawable.stop );
+                    return false;
+                case MotionEvent.ACTION_UP:
+                    if( mIsSharing ) {
+                        stopSharing();
+                    } else {
+                        startActivityForResult( new Intent( getActivity(), RoutePickerActivity.class ), 1 );
+                        startSharing();
+                    }
+                    break;
             }
             return false;
         }

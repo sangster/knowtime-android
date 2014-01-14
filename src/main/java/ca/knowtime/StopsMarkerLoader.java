@@ -3,68 +3,71 @@ package ca.knowtime;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.util.Log;
-
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
-public class StopsMarkerLoader extends AsyncTaskLoader<HashMap<String, MarkerOptions>> {
+public class StopsMarkerLoader
+        extends AsyncTaskLoader<Map<String, MarkerOptions>>
+{
+    private static Map<String, MarkerOptions> stopMarkers = Collections.emptyMap();
+    private double mBottomLat;
+    private double mBottomLng;
+    private double mTopLat;
+    private double mTopLng;
+    private float mZoom;
+    private boolean mShowStops;
 
-    private double bottomLat;
-    private double bottomLng;
-    private double topLat;
-    private double topLng;
-    private float zoom;
-    private boolean showStops;
-    private static HashMap<String, MarkerOptions> storedStopMarkers = new HashMap<String, MarkerOptions>();
 
-    public StopsMarkerLoader(Context context, double bottomLat, double bottomLng, double topLat, double topLng, float zoom, boolean showStops) {
-        super(context);
-        this.bottomLat = bottomLat;
-        this.bottomLng = bottomLng;
-        this.topLat = topLat;
-        this.topLng = topLng;
-        this.zoom = zoom;
-        this.showStops = showStops;
+    public StopsMarkerLoader( final Context context, final double bottomLat, final double bottomLng,
+                              final double topLat, final double topLng, final float zoom, final boolean showStops ) {
+        super( context );
+        mBottomLat = bottomLat;
+        mBottomLng = bottomLng;
+        mTopLat = topLat;
+        mTopLng = topLng;
+        mZoom = zoom;
+        mShowStops = showStops;
     }
+
 
     @Override
-    public HashMap<String, MarkerOptions> loadInBackground() {
-        if (storedStopMarkers.size() == 0)
-        {
-        	storedStopMarkers = WebApiService.fetchAllStops();
+    public Map<String, MarkerOptions> loadInBackground() {
+        if( stopMarkers.isEmpty() ) {
+            stopMarkers = WebApiService.fetchAllStops();
         }
-        return limitMarkerByBounds(storedStopMarkers);
+        return limitMarkerByBounds( stopMarkers );
     }
 
-    private HashMap<String, MarkerOptions> limitMarkerByBounds(HashMap<String, MarkerOptions> busMarker) {
-        HashMap<String, MarkerOptions> resultMarker = new HashMap<String, MarkerOptions>();
-        LatLng latlng;
-        double lat;
-        double lng;
 
-        Log.d(getClass().getCanonicalName(), "current zoom :" + zoom + "Default zoom:" + MainActivity.DEFAULT_HALIFAX_LAT_LNG_ZOOM);
+    private Map<String, MarkerOptions> limitMarkerByBounds( final Map<String, MarkerOptions> markers ) {
+        final Map<String, MarkerOptions> resultMarker = new HashMap<String, MarkerOptions>();
 
-        if (this.zoom >= MainActivity.DEFAULT_HALIFAX_LAT_LNG_ZOOM) {
-            final Object[] currentStops = busMarker.keySet().toArray();
-            MarkerOptions m;
-            for (Object currentStop : currentStops) {
-                m = busMarker.get(currentStop);
-                latlng = m.getPosition();
-                lat = latlng.latitude;
-                lng = latlng.longitude;
+        Log.d( getClass().getCanonicalName(),
+               "current zoom :" + mZoom + "Default zoom:" + MainActivity.DEFAULT_HALIFAX_LAT_LNG_ZOOM );
 
-                if (showStops)
-                {
-                	if (this.topLat > lat && lat > this.bottomLat ) {
-                		if (this.topLng > lng && lng > this.bottomLng ){
-                			resultMarker.put((String)currentStop, busMarker.get(currentStop));
-                		}
-                	}
+        if( mShowStops && mZoom >= MainActivity.DEFAULT_HALIFAX_LAT_LNG_ZOOM ) {
+            for( String currentStop : markers.keySet() ) {
+                final MarkerOptions marker = markers.get( currentStop );
+                if( isMarkerWithinRange( marker ) ) {
+                    resultMarker.put( currentStop, marker );
                 }
             }
         }
-        Log.d(getClass().getCanonicalName(), "limited result size :" + resultMarker.size());
+
+        Log.d( getClass().getCanonicalName(), "limited result size :" + resultMarker.size() );
         return resultMarker;
+    }
+
+
+    private boolean isMarkerWithinRange( final MarkerOptions marker ) {
+        final LatLng latlng = marker.getPosition();
+        final double lat = latlng.latitude;
+        final double lng = latlng.longitude;
+
+        return mTopLat > lat && lat > mBottomLat && mTopLng > lng && lng > mBottomLng;
     }
 }

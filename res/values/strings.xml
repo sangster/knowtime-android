@@ -57,7 +57,7 @@ Last modified: 27th November 2013</string>
     <string name="loading_stops">Loading Stops ....</string>
     <string name="stops_header_default">Stops Header</string>
 	<string name="route_selector_default_number">99</string>
-  <array name="planets_array">
+  <array name="drawer_actions">
     <item>Share me</item>
     <item>About</item>
     <item>Stops</item>
