@@ -1,9 +1,10 @@
 package ca.knowtime;
 
-import android.text.format.DateFormat;
+import android.net.Uri;
 import android.util.Log;
 import ca.knowtime.comm.KnowTime;
 import ca.knowtime.comm.KnowTimeAccess;
+import ca.knowtime.comm.types.Path;
 import ca.knowtime.comm.types.RouteName;
 import ca.knowtime.comm.types.RouteStopTimes;
 import ca.knowtime.comm.types.User;
@@ -12,37 +13,34 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /** Created by aeisses on 2013-11-19. */
 public class WebApiService
 {
-    private static final String SANGSTERBASEURL = "http://api.knowtime.ca/alpha_1/";
-    private static final String ROUTES = "routes/";
+    private static final String BASE_URL = "http://api.knowtime.ca/alpha_1/";
     private static final String SHORTS = "short:";
     private static final String PATHS = "paths/";
-    private static final String HEADSIGNS = "headsigns/";
     private static final String ESTIMATE = "estimates/";
 
 
-    private static final KnowTimeAccess KNOW_TIME = KnowTime.connect( URI.create( SANGSTERBASEURL ), new RestCache() );
+    private static final KnowTimeAccess KNOW_TIME = KnowTime.connect( Uri.parse( BASE_URL ), new RestCache() );
 
 
     public static void fetchAllRoutes() {
@@ -51,7 +49,8 @@ public class WebApiService
             @Override
             public void run() {
                 try {
-                    for( final RouteName routeName : KNOW_TIME.routeNames() ) {
+                    final List<RouteName> routeNames = KNOW_TIME.routeNames();
+                    for( final RouteName routeName : routeNames ) {
                         final Route route = new Route( routeName.getLongName(), routeName.getShortName() );
                         if( DatabaseHandler.getInstance().getRoute( route.getShortName() ) == null ) {
                             DatabaseHandler.getInstance().addRoute( route );
@@ -77,7 +76,7 @@ public class WebApiService
 
     public static JSONArray getEstimatesForRoute( final int routeId ) {
         try {
-            return getJSONArrayFromUrl( SANGSTERBASEURL + ESTIMATE + SHORTS + routeId );
+            return getJSONArrayFromUrl( BASE_URL + ESTIMATE + SHORTS + routeId );
         } catch( Exception e ) {
             e.printStackTrace();
             return null;
@@ -87,89 +86,27 @@ public class WebApiService
 
     public static List<RouteStopTimes> getRouteStopTimes( final int stopNumber )
             throws IOException, JSONException {
-        return KNOW_TIME.routesStopTimes( stopNumber, new Date() );
+        final int[] date = todaysDateParts();
+        return KNOW_TIME.routesStopTimes( stopNumber, date[0], date[1], date[2] );
     }
 
 
-    public static JSONArray getPathForRouteId( final String routeId ) {
-        try {
-            return getJSONArrayFromUrl(
-                    SANGSTERBASEURL + PATHS + DateFormat.format( "yyyy-MM-dd", new Date() ) + "/" + routeId );
-        } catch( Exception e ) {
-            e.printStackTrace();
-        }
-        return null;
+    private static int[] todaysDateParts() {
+        return dateParts( new Date() );
     }
 
 
-    public static JSONArray loadPathForRoute( final String shortName ) {
-        try {
-            return getJSONArrayFromUrl(
-                    SANGSTERBASEURL + ROUTES + SHORTS + shortName + "/" + HEADSIGNS + DateFormat.format( "yyyy-MM-dd",
-                                                                                                         new Date() ) + "/" + DateFormat.format(
-                            "HH:MM", new Date() ) );
-        } catch( Exception e ) {
-            e.printStackTrace();
-        }
-        return null;
+    private static int[] dateParts( final Date date ) {
+        final Calendar cal = Calendar.getInstance();
+        cal.setTime( date );
+        return new int[]{ cal.get( Calendar.YEAR ), cal.get( Calendar.MONTH ) + 1, cal.get( Calendar.DAY_OF_MONTH ) };
     }
 
 
-    public static String sendUrlRequest( String url ) {
-        HttpClient client = new DefaultHttpClient();
-        HttpGet post = new HttpGet( url );
-        HttpResponse response;
-        try {
-            response = client.execute( post );
-            HttpEntity entity = response.getEntity();
-            if( entity != null ) {
-                InputStream instream = entity.getContent();
-                String result = convertStreamToString( instream );
-                instream.close();
-                return result;
-            }
-        } catch( ClientProtocolException e ) {
-            e.printStackTrace();
-        } catch( Exception e ) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-
-    private static String convertStreamToString( InputStream is ) {
-        BufferedReader reader = new BufferedReader( new InputStreamReader( is ) );
-        StringBuilder sb = new StringBuilder();
-
-        String line = null;
-        try {
-            while( (line = reader.readLine()) != null ) {
-                sb.append( line + "\n" );
-            }
-        } catch( IOException e ) {
-            e.printStackTrace();
-        } finally {
-            try {
-                is.close();
-            } catch( IOException e ) {
-                e.printStackTrace();
-            }
-        }
-        return sb.toString();
-    }
-
-
-    private static JSONObject getJSONObjectFromUrl( String url ) {
-        JSONObject jObj = null;
-        // try parse the string to a JSON object
-        try {
-            jObj = new JSONObject( WebApiService.getResponseFromUrl( url ) );
-        } catch( JSONException e ) {
-            Log.e( "JSON Parser", "Error parsing data " + e.toString() );
-        }
-
-        // return JSON String
-        return jObj;
+    public static List<Path> getPathsForRouteId( final UUID routeId )
+            throws IOException, JSONException {
+        final int[] date = todaysDateParts();
+        return KNOW_TIME.routePaths( routeId, date[0], date[1], date[2] );
     }
 
 
@@ -222,11 +159,6 @@ public class WebApiService
             Log.e( "Buffer Error", "Error converting result " + e.toString() );
         }
         return response;
-    }
-
-
-    public static List<Route> getRoutesList() {
-        return DatabaseHandler.getInstance().getAllRoutes();
     }
 
 
