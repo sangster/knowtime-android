@@ -11,22 +11,22 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import ca.knowtime.comm.types.Estimate;
 import ca.knowtime.comm.types.Location;
 import ca.knowtime.comm.types.Path;
 import ca.knowtime.map.LocationBoundsBuilder;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +38,7 @@ public class RouteMapActivity
     private GoogleMap mMap;
     private ProgressBar mProgressBar;
     private final Handler mHandler = new Handler();
-    private Marker[] mMarkers = null;
+    private List<Marker> mMarkers = new ArrayList<Marker>();
     private Context mContext;
     private boolean mIsUpdatingLocations;
     private ImageButton mFavouriteButton;
@@ -106,11 +106,6 @@ public class RouteMapActivity
                     return; // TODO One path is not good enough?
                 }
 
-                float latPointMin = Float.NaN;
-                float latPointMax = Float.NaN;
-                float lngPointMin = Float.NaN;
-                float lngPointMax = Float.NaN;
-
                 final LocationBoundsBuilder bounds = new LocationBoundsBuilder();
 
                 for( final Path path : paths ) {
@@ -144,77 +139,9 @@ public class RouteMapActivity
 
 
     public void updateBusesLocation() {
-        Thread thread = new Thread( new Runnable()
-        {
-            @Override
-            public void run() {
-                mIsUpdatingLocations = true;
-                final JSONArray routes = WebApiService.getEstimatesForRoute( Integer.parseInt( mRouteNumber ) );
-                if( routes != null ) {
-                    runOnUiThread( new Runnable()
-                    {
-                        @Override
-                        public void run() {
-                            if( mMarkers != null ) {
-                                clearMarkers();
-                            }
-                            mMarkers = new Marker[routes.length()];
-                        }
-                    } );
-                    try {
-                        for( int i = 0; i < routes.length(); i++ ) {
-                            final JSONObject busJSON = routes.getJSONObject( i );
-                            final JSONObject busLocationJSON = busJSON.getJSONObject( "location" );
-                            final float lat = Float.parseFloat( busLocationJSON.getString( "lat" ) );
-                            final float lng = Float.parseFloat( busLocationJSON.getString( "lng" ) );
-                            if( busLocationJSON == null || lat != 0 || lng != 0 ) {
-                                final int markerCounter = i;
-                                runOnUiThread( new Runnable()
-                                {
-                                    @Override
-                                    public void run() {
-                                        mMarkers[markerCounter] = mMap.addMarker(
-                                                new MarkerOptions().position( new LatLng( lat, lng ) ).anchor( 0.5f,
-                                                                                                               0.5f ).icon(
-                                                        BitmapDescriptorFactory.fromResource( R.drawable.busicon ) ) );
-                                    }
-                                } );
-                            } else if( i != 0 ) {
-                                break;
-                            } else {
-                                runOnUiThread( new Runnable()
-                                {
-                                    @Override
-                                    public void run() {
-                                        loadAlertDialog();
-                                    }
-                                } );
-                                break;
-                            }
-                        }
-                    } catch( JSONException e ) {
-                        e.printStackTrace();
-                        runOnUiThread( new Runnable()
-                        {
-                            @Override
-                            public void run() {
-                                loadAlertDialog();
-                            }
-                        } );
-                    }
-                } else {
-                    runOnUiThread( new Runnable()
-                    {
-                        @Override
-                        public void run() {
-                            loadAlertDialog();
-                        }
-                    } );
-                }
-                mIsUpdatingLocations = false;
-            }
-        } );
-        thread.start();
+        if( !mIsUpdatingLocations ) {
+            new Thread( new UpdateLocationsRunnable() ).start();
+        }
     }
 
 
@@ -236,13 +163,28 @@ public class RouteMapActivity
 
 
     private void clearMarkers() {
-        for( int i = 0; i < mMarkers.length; i++ ) {
-            if( mMarkers[i] != null ) {
-                mMarkers[i].remove();
-                mMarkers[i] = null;
+        new Thread( new RemoveMarkersFromMapRunnable( new ArrayList<Marker>( mMarkers ) ) ).start();
+        mMarkers.clear();
+    }
+
+
+    private static class RemoveMarkersFromMapRunnable
+            implements Runnable
+    {
+        private final ArrayList<Marker> mMarkers;
+
+
+        public RemoveMarkersFromMapRunnable( final ArrayList<Marker> markers ) {
+            mMarkers = markers;
+        }
+
+
+        @Override
+        public void run() {
+            for( final Marker marker : mMarkers ) {
+                marker.remove();
             }
         }
-        mMarkers = null;
     }
 
 
@@ -262,6 +204,7 @@ public class RouteMapActivity
             mMap.addPolyline( mRouteLine );
         }
     }
+
 
     private class MoveCameraRunnable
             implements Runnable
@@ -284,6 +227,65 @@ public class RouteMapActivity
             mMap.moveCamera( CameraUpdateFactory.newLatLngBounds( bounds, 0 ) );
             mProgressBar.setVisibility( View.INVISIBLE );
             mHandler.post( mUpdateUI );
+        }
+    }
+
+
+    private class AddMarkerRunnable
+            implements Runnable
+    {
+        private final Location mLoc;
+
+
+        public AddMarkerRunnable( final Location loc ) {
+            mLoc = loc;
+        }
+
+
+        @Override
+        public void run() {
+            final LatLng pos = new LatLng( mLoc.getLat(), mLoc.getLng() );
+            final BitmapDescriptor icon = BitmapDescriptorFactory.fromResource( R.drawable.busicon );
+
+            MarkerOptions marker = new MarkerOptions().position( pos );
+            marker = marker.anchor( 0.5f, 0.5f ).icon( icon );
+
+            mMarkers.add( mMap.addMarker( marker ) );
+        }
+    }
+
+    private class AlertDialogRunnable
+            implements Runnable
+    {
+        @Override
+        public void run() {
+            loadAlertDialog();
+        }
+    }
+
+
+    private class UpdateLocationsRunnable
+            implements Runnable
+    {
+        @Override
+        public void run() {
+            mIsUpdatingLocations = true;
+            clearMarkers();
+
+            final List<Estimate> routes = WebApiService.getEstimatesForRoute( Integer.parseInt( mRouteNumber ) );
+            if( !routes.isEmpty() ) {
+                final Estimate first = routes.get( 0 );
+                for( final Estimate route : routes ) {
+                    if( route.getLocation().isValid() ) {
+                        runOnUiThread( new AddMarkerRunnable( route.getLocation() ) );
+                    } else if( route == first ) {
+                        runOnUiThread( new AlertDialogRunnable() );
+                    }
+                }
+            } else {
+                runOnUiThread( new AlertDialogRunnable() );
+            }
+            mIsUpdatingLocations = false;
         }
     }
 }
