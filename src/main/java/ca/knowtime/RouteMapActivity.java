@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import ca.knowtime.comm.async.AsyncGet;
+import ca.knowtime.comm.async.AsyncCallback;
 import ca.knowtime.comm.types.Estimate;
 import ca.knowtime.comm.types.Location;
 import ca.knowtime.comm.types.Path;
@@ -33,6 +35,7 @@ import java.util.UUID;
 public class RouteMapActivity
         extends Activity
 {
+    public static final int UPDATE_UI_DELAY = 3000; // millis
     private String mRouteNumber;
     private UUID mRouteId;
     private GoogleMap mMap;
@@ -50,7 +53,7 @@ public class RouteMapActivity
             if( !mIsUpdatingLocations ) {
                 updateBusesLocation();
             }
-            mHandler.postDelayed( mUpdateUI, 3000 ); // 1 second
+            mHandler.postDelayed( mUpdateUI, UPDATE_UI_DELAY );
         }
     };
 
@@ -91,17 +94,10 @@ public class RouteMapActivity
 
 
     private void getRoute() {
-        new Thread( new Runnable()
+        WebApiService.getPathsForRouteId( mRouteId ).execute( new AsyncCallback<List<Path>>()
         {
             @Override
-            public void run() {
-                final List<Path> paths;
-                try {
-                    paths = WebApiService.getPathsForRouteId( mRouteId );
-                } catch( Exception e ) {
-                    throw new RuntimeException( e );
-                }
-
+            public void requestComplete( final List<Path> paths ) {
                 if( paths.size() <= 1 ) {
                     return; // TODO One path is not good enough?
                 }
@@ -122,14 +118,14 @@ public class RouteMapActivity
 
                 runOnUiThread( new MoveCameraRunnable( bounds.minLocation(), bounds.maxLocation() ) );
             }
-        } ).start();
+        } );
     }
 
 
     public void touchBackButton( View view ) {
         mRoute.setFavourite( mFavouriteButton.isSelected() );
         DatabaseHandler.getInstance().updateRoute( mRoute );
-        this.finish();
+        finish();
     }
 
 
@@ -272,20 +268,28 @@ public class RouteMapActivity
             mIsUpdatingLocations = true;
             clearMarkers();
 
-            final List<Estimate> routes = WebApiService.getEstimatesForRoute( Integer.parseInt( mRouteNumber ) );
-            if( !routes.isEmpty() ) {
-                final Estimate first = routes.get( 0 );
-                for( final Estimate route : routes ) {
-                    if( route.getLocation().isValid() ) {
-                        runOnUiThread( new AddMarkerRunnable( route.getLocation() ) );
-                    } else if( route == first ) {
+            final AsyncGet<List<Estimate>> task = WebApiService.getEstimatesForRoute(
+                    Integer.parseInt( mRouteNumber ) );
+
+            task.execute( new AsyncCallback<List<Estimate>>()
+            {
+                @Override
+                public void requestComplete( final List<Estimate> routes ) {
+                    if( !routes.isEmpty() ) {
+                        final Estimate first = routes.get( 0 );
+                        for( final Estimate route : routes ) {
+                            if( route.getLocation().isValid() ) {
+                                runOnUiThread( new AddMarkerRunnable( route.getLocation() ) );
+                            } else if( route == first ) {
+                                runOnUiThread( new AlertDialogRunnable() );
+                            }
+                        }
+                    } else {
                         runOnUiThread( new AlertDialogRunnable() );
                     }
+                    mIsUpdatingLocations = false;
                 }
-            } else {
-                runOnUiThread( new AlertDialogRunnable() );
-            }
-            mIsUpdatingLocations = false;
+            } );
         }
     }
 }

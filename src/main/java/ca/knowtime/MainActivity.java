@@ -29,6 +29,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity
         extends Activity
@@ -114,7 +115,7 @@ public class MainActivity
 
 
     private void addItemsToMap( Map<String, MarkerOptions> result ) {
-        final Object[] currentStops = busStopMarkers.keySet().toArray();
+        final Set<String> currentStops = busStopMarkers.keySet();
         Marker marker;
         for( Object currentStop : currentStops ) {
             marker = busStopMarkers.get( currentStop );

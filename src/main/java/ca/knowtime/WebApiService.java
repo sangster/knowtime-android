@@ -1,13 +1,12 @@
 package ca.knowtime;
 
 import android.net.Uri;
+import ca.knowtime.comm.AsyncKnowTimeAccess;
 import ca.knowtime.comm.KnowTime;
-import ca.knowtime.comm.KnowTimeAccess;
-import ca.knowtime.comm.types.Estimate;
-import ca.knowtime.comm.types.Path;
-import ca.knowtime.comm.types.RouteName;
-import ca.knowtime.comm.types.RouteStopTimes;
-import ca.knowtime.comm.types.User;
+import ca.knowtime.comm.async.AsyncGet;
+import ca.knowtime.comm.async.AsyncCallback;
+import ca.knowtime.comm.types.*;
+import ca.knowtime.comm.types.Stop;
 import ca.knowtime.map.StopMarker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -22,33 +21,43 @@ import java.util.UUID;
 public class WebApiService
 {
     private static final String BASE_URL = "http://api.knowtime.ca/alpha_1/";
-    private static final KnowTimeAccess KNOW_TIME = KnowTime.connect( Uri.parse( BASE_URL ), new RestCache() );
+    private static final AsyncKnowTimeAccess KNOW_TIME = KnowTime.async( Uri.parse( BASE_URL ), new RestCache() );
 
 
     public static void fetchAllRoutes() {
-        final List<RouteName> routeNames = KNOW_TIME.routeNames();
+        KNOW_TIME.routeNames().execute( new AsyncCallback<List<RouteName>>()
+        {
+            @Override
+            public void requestComplete( final List<RouteName> routeNames ) {
+                for( final RouteName routeName : routeNames ) {
+                    final Route route = new Route( routeName.getLongName(), routeName.getShortName() );
 
-        for( final RouteName routeName : routeNames ) {
-            final Route route = new Route( routeName.getLongName(), routeName.getShortName() );
-
-            if( DatabaseHandler.getInstance().getRoute( route.getShortName() ) == null ) {
-                DatabaseHandler.getInstance().addRoute( route );
+                    if( DatabaseHandler.getInstance().getRoute( route.getShortName() ) == null ) {
+                        DatabaseHandler.getInstance().addRoute( route );
+                    }
+                }
             }
-        }
+        } );
     }
 
 
-    public static Map<String, MarkerOptions> fetchAllStops() {
-        return StopMarker.stopMarkersMap( KNOW_TIME.stops() );
+    public static void fetchAllStops( final AsyncCallback<Map<String, MarkerOptions>> result ) {
+        KNOW_TIME.stops().execute( new AsyncCallback<List<Stop>>()
+        {
+            @Override
+            public void requestComplete( final List<Stop> stops ) {
+                result.requestComplete( StopMarker.stopMarkersMap( stops ) );
+            }
+        } );
     }
 
 
-    public static List<Estimate> getEstimatesForRoute( final int routeId ) {
+    public static AsyncGet<List<Estimate>> getEstimatesForRoute( final int routeId ) {
         return KNOW_TIME.estimatesForShortName( Integer.toString( routeId ) );
     }
 
 
-    public static List<RouteStopTimes> getRouteStopTimes( final int stopNumber ) {
+    public static AsyncGet<List<RouteStopTimes>> getRouteStopTimes( final int stopNumber ) {
         final int[] date = todaysDateParts();
         return KNOW_TIME.routesStopTimes( stopNumber, date[0], date[1], date[2] );
     }
@@ -66,7 +75,7 @@ public class WebApiService
     }
 
 
-    public static List<Path> getPathsForRouteId( final UUID routeId ) {
+    public static AsyncGet<List<Path>> getPathsForRouteId( final UUID routeId ) {
         final int[] date = todaysDateParts();
         return KNOW_TIME.routePaths( routeId, date[0], date[1], date[2] );
     }
@@ -96,12 +105,12 @@ public class WebApiService
     }
 
 
-    public static User createUser( final int routeId ) {
+    public static AsyncGet<User> createUser( final int routeId ) {
         return KNOW_TIME.createUser( routeId );
     }
 
 
-    public static float pollRate() {
+    public static AsyncGet<Float> pollRate() {
         return KNOW_TIME.pollRate();
     }
 }

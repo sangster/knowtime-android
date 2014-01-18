@@ -18,6 +18,8 @@ import ca.knowtime.R;
 import ca.knowtime.RouteMapActivity;
 import ca.knowtime.Stop;
 import ca.knowtime.WebApiService;
+import ca.knowtime.comm.async.AsyncGet;
+import ca.knowtime.comm.async.AsyncCallback;
 import ca.knowtime.comm.types.RouteStopTimes;
 import ca.knowtime.comm.types.StopTimePair;
 
@@ -77,18 +79,15 @@ public class StopsFragment
 
 
     private void getStops() {
-        new Thread( new Runnable()
+        final AsyncGet<List<RouteStopTimes>> task = WebApiService.getRouteStopTimes( Integer.parseInt( mStopNumber ) );
+
+        task.execute( new AsyncCallback<List<RouteStopTimes>>()
         {
             @Override
-            public void run() {
-                try {
-                    List<RouteStopTimes> stopTimes = WebApiService.getRouteStopTimes( Integer.parseInt( mStopNumber ) );
-                    getActivity().runOnUiThread( new GetStopsRunnable( stopTimes ) );
-                } catch( Exception e ) {
-                    throw new RuntimeException( e );
-                }
+            public void requestComplete( final List<RouteStopTimes> stopTimes ) {
+                new GetStopsRunnable( stopTimes ).run();
             }
-        } ).start();
+        } );
     }
 
 

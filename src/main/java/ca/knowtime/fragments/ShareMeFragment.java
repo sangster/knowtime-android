@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import ca.knowtime.R;
 import ca.knowtime.RoutePickerActivity;
 import ca.knowtime.WebApiService;
+import ca.knowtime.comm.async.AsyncCallback;
 import ca.knowtime.comm.types.User;
 
 import java.io.IOException;
@@ -113,21 +114,23 @@ public class ShareMeFragment
 
 
     private void createNewUser( final String route ) {
-        new Thread( new Runnable()
+        WebApiService.createUser( Integer.parseInt( route ) ).execute( new AsyncCallback<User>()
         {
             @Override
-            public void run() {
-                try {
-                    mUser = WebApiService.createUser( Integer.parseInt( route ) );
-                    mPollRate = WebApiService.pollRate();
+            public void requestComplete( final User user ) {
+                mUser = user;
 
-                    mStartTime = new Date();
-                    mHandler.post( mUpdateUI );
-                } catch( Exception e ) {
-                    stopSharing();
-                }
+                WebApiService.pollRate().execute( new AsyncCallback<Float>()
+                {
+                    @Override
+                    public void requestComplete( final Float pollRate ) {
+                        mPollRate = pollRate;
+                        mStartTime = new Date();
+                        mHandler.post( mUpdateUI );
+                    }
+                } );
             }
-        } ).start();
+        } );
     }
 
 

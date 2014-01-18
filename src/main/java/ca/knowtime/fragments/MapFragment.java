@@ -41,6 +41,7 @@ public class MapFragment
     private Boolean mShowStops;
     private ProgressBar mMapMarkerProgressBar;
     private TextView mMapMarkerProgressBarText;
+    private View mView;
 
 
     @Override
@@ -55,10 +56,12 @@ public class MapFragment
     @Override
     public View onCreateView( final LayoutInflater inflater, final ViewGroup container,
                               final Bundle savedInstanceState ) {
-        final View view = inflater.inflate( R.layout.activity_main, container, false );
-        mMapMarkerProgressBar = (ProgressBar) view.findViewById( R.id.mapMarkerProgressBar );
-        mMapMarkerProgressBarText = (TextView) view.findViewById( R.id.mapMarkerProgressBarText );
-        return view;
+        if( mView == null ) {
+            mView = inflater.inflate( R.layout.activity_main, container, false );
+            mMapMarkerProgressBar = (ProgressBar) mView.findViewById( R.id.mapMarkerProgressBar );
+            mMapMarkerProgressBarText = (TextView) mView.findViewById( R.id.mapMarkerProgressBarText );
+        }
+        return mView;
     }
 
 
