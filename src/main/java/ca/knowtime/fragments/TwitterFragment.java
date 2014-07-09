@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import ca.knowtime.R;
+import ca.knowtime.comm.KnowTime;
 
 public class TwitterFragment
         extends Fragment

@@ -15,9 +15,7 @@ public class AboutFragment
     public View onCreateView( final LayoutInflater inflater, final ViewGroup container,
                               final Bundle savedInstanceState ) {
         final View view = inflater.inflate( R.layout.activity_about, container, false );
-
         view.findViewById( R.id.twitterButton ).setOnClickListener( new EmailOnClickListener() );
-
         return view;
     }
 

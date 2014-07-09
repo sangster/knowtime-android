@@ -27,7 +27,7 @@
         android:textSize="16sp" />
 
     <ImageButton
-        android:id="@+id/favouriteButton"
+        android:id="@+id/favoriteButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
