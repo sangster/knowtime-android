@@ -65,4 +65,7 @@ Last modified: 27th November 2013</string>
     <item>\@hfxtransit</item>
     <item>Privacy Policy</item>
   </array>
+
+
+  <string name="choose_data_set">Choose your Data Set</string>
 </resources>

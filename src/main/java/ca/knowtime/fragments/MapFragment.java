@@ -3,7 +3,6 @@ package ca.knowtime.fragments;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,11 +10,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import ca.knowtime.Development;
 import ca.knowtime.R;
 import ca.knowtime.comm.KnowTime;
+import ca.knowtime.comm.KnowTimeAccess;
 import ca.knowtime.comm.Response;
-import ca.knowtime.comm.types.Agency;
-import ca.knowtime.comm.types.DataSetSummary;
+import ca.knowtime.comm.models.gtfs.Agency;
+import ca.knowtime.comm.models.gtfs.DataSetSummary;
 import com.android.volley.VolleyError;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -38,6 +39,7 @@ public class MapFragment
     private ProgressBar mMapMarkerProgressBar;
     private TextView mMapMarkerProgressBarText;
     private View mView;
+    private KnowTimeAccess mAccess;
 
 
     @Override
@@ -49,7 +51,15 @@ public class MapFragment
 
 
     @Override
-    public View onCreateView( final LayoutInflater inflater, final ViewGroup container,
+    public void onDestroy() {
+        super.onDestroy();
+        mContext = null;
+    }
+
+
+    @Override
+    public View onCreateView( final LayoutInflater inflater,
+                              final ViewGroup container,
                               final Bundle savedInstanceState ) {
         if( mView == null ) {
             mView = inflater.inflate( R.layout.activity_main, container, false );
@@ -93,13 +103,14 @@ public class MapFragment
     @Override
     public void onResume() {
         super.onResume();
+        mAccess = KnowTime.connect( mContext, Development.BASE_URL );
 
         final Response<List<DataSetSummary>> response = new Response<List<DataSetSummary>>()
         {
             @Override
             public void onResponse( final List<DataSetSummary> response ) {
                 for( final DataSetSummary summary : response ) {
-                    summary.agencies( new Response<List<Agency>>()
+                    summary.agencies( this, new Response<List<Agency>>()
                     {
                         @Override
                         public void onResponse( final List<Agency> response ) {
@@ -124,6 +135,14 @@ public class MapFragment
             }
         };
 
-        KnowTime.dataSets( mContext, Uri.parse( "http://aerith:3000/v2" ), response );
+        mAccess.gtfs().dataSets( this, response );
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mAccess.cancel( this );
+        mAccess = null;
     }
 }

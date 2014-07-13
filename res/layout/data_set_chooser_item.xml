@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:baselineAligned="false"
+  android:padding="16dp">
+
+  <TextView
+    android:id="@+id/data_set_chooser_item_name"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    style="@android:style/TextAppearance.Holo.WindowTitle"
+    android:text="Name"
+    android:paddingBottom="4dp" />
+
+  <TextView
+    android:id="@+id/data_set_chooser_item_last_updated"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:text="Date" />
+
+  <TextView
+    android:id="@+id/data_set_chooser_item_dates"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Dates" />
+</LinearLayout>

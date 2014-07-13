@@ -41,6 +41,14 @@ public class DrawerActivity
     }
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mDrawerLayout = null;
+        mDrawerList = null;
+    }
+
+
     private class DrawerItemClickListener
             implements ListView.OnItemClickListener
     {
