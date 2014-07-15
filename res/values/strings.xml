@@ -57,4 +57,17 @@ Last modified: 27th November 2013</string>
     <string name="loading_stops">Loading Stops ....</string>
     <string name="stops_header_default">Stops Header</string>
 	<string name="route_selector_default_number">99</string>
+  <array name="drawer_actions">
+    <item>Share me</item>
+    <item>About</item>
+    <item>Stops</item>
+    <item>Favourites</item>
+    <item>\@hfxtransit</item>
+    <item>Privacy Policy</item>
+  </array>
+
+
+  <string name="choose_data_set">Choose your Data Set</string><string name="welcome_is_free">KnowTime is totally free.</string><string name="welcome_no_signup">You don\'t even need to sign-up.</string>
+  <string name="data_set_valid_until">Valid until %s</string><string name="data_set_title">Choose your Location</string>
+  <string name="please_select_data_set">Please select your location</string>
 </resources>
