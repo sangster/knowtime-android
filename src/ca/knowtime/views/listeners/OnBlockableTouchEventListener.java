@@ -1,6 +1,8 @@
 package ca.knowtime.views.listeners;
 
+import android.view.MotionEvent;
+
 public interface OnBlockableTouchEventListener
 {
-    boolean onBlockableTouchEvent();
+    boolean onBlockableTouchEvent( final MotionEvent ev );
 }

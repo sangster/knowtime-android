@@ -1,7 +1,11 @@
 package ca.knowtime;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
+import android.view.MotionEvent;
 import ca.knowtime.adapters.WelcomePagerAdapter;
 import ca.knowtime.views.BlockableViewPager;
 import ca.knowtime.views.listeners.OnBlockableTouchEventListener;
@@ -14,6 +18,7 @@ public class WelcomeActivity
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
+        Log.d( "JON", "moo cow" );
         super.onCreate( savedInstanceState );
         setContentView( R.layout.welcome_activity );
 
@@ -37,11 +42,15 @@ public class WelcomeActivity
             implements OnBlockableTouchEventListener
     {
         @Override
-        public boolean onBlockableTouchEvent() {
-            if( mPager.getCurrentItem() == WelcomePagerAdapter.PAGE_CHOOSE_DATA_SET ) {
+        public boolean onBlockableTouchEvent( final MotionEvent ev ) {
+            return mPager.getCurrentItem() == WelcomePagerAdapter.PAGE_CHOOSE_DATA_SET && !isDataSetNameSet();
+        }
 
-            }
-            return false;
+
+        private boolean isDataSetNameSet() {
+            final SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(
+                    WelcomeActivity.this );
+            return pref.contains( "data_set" );
         }
     }
 }

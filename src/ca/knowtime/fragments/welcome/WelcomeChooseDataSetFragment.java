@@ -1,9 +1,11 @@
 package ca.knowtime.fragments.welcome;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -147,9 +149,18 @@ public class WelcomeChooseDataSetFragment
             view.setSelected( true );
             final DataSetSummary dataSet = (DataSetSummary) mDataSetsView.getItemAtPosition(
                     position );
+            saveChosenDataSet( dataSet );
 
             final CameraUpdate update = CameraUpdateFactory.newLatLngBounds( bounds( dataSet ), 0 );
             mMapView.getMap().animateCamera( update );
+        }
+
+
+        private void saveChosenDataSet( final DataSetSummary dataSetSummary ) {
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences( getActivity() );
+            SharedPreferences.Editor edit = pref.edit();
+            edit.putString( "data_set", dataSetSummary.getName() );
+            edit.commit();
         }
 
 

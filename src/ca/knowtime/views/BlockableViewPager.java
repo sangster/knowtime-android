@@ -25,8 +25,10 @@ public class BlockableViewPager
 
     @Override
     public boolean onInterceptTouchEvent( final MotionEvent ev ) {
-        return mOnTouchEventBlockedListener.isPresent() && mOnTouchEventBlockedListener.get()
-                                                                                       .onBlockableTouchEvent();
+        final Optional<OnBlockableTouchEventListener> opt = mOnTouchEventBlockedListener;
+        final boolean block = opt.isPresent() && opt.get().onBlockableTouchEvent( ev );
+
+        return !block && super.onInterceptTouchEvent( ev );
     }
 
 
