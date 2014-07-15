@@ -5,21 +5,16 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:baselineAligned="false"
+  android:background="@drawable/data_set_chooser_item_background"
   android:padding="16dp">
 
   <TextView
-    android:id="@+id/data_set_chooser_item_name"
+    android:id="@+id/data_set_chooser_item_title"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     style="@android:style/TextAppearance.Holo.WindowTitle"
-    android:text="Name"
+    android:text="Title"
     android:paddingBottom="4dp" />
-
-  <TextView
-    android:id="@+id/data_set_chooser_item_last_updated"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:text="Date" />
 
   <TextView
     android:id="@+id/data_set_chooser_item_dates"

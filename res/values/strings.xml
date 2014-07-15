@@ -67,5 +67,7 @@ Last modified: 27th November 2013</string>
   </array>
 
 
-  <string name="choose_data_set">Choose your Data Set</string>
+  <string name="choose_data_set">Choose your Data Set</string><string name="welcome_is_free">KnowTime is totally free.</string><string name="welcome_no_signup">You don\'t even need to sign-up.</string>
+  <string name="data_set_valid_until">Valid until %s</string><string name="data_set_title">Choose your Location</string>
+  <string name="please_select_data_set">Please select your location</string>
 </resources>

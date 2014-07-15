@@ -31,16 +31,8 @@
       android:name="com.google.android.gms.version"
       android:value="@integer/google_play_services_version" />
 
-    <!--<service-->
-    <!--android:name=".LocationShare"-->
-    <!--android:enabled="true">-->
-    <!--<intent-filter android:label="@string/location_service">-->
-    <!--<action android:name="com.knowtime.locationservice" />-->
-    <!--</intent-filter>-->
-    <!--</service>-->
-
     <activity
-      android:name=".StartActivity"
+      android:name=".WelcomeActivity"
       android:theme="@style/AppTheme"
       android:label="@string/app_name">
       <intent-filter>
