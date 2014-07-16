@@ -4,7 +4,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
 import ca.knowtime.adapters.WelcomePagerAdapter;
@@ -19,7 +18,6 @@ public class WelcomeActivity
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
-        Log.d( "JON", "moo cow" );
         super.onCreate( savedInstanceState );
         setContentView( R.layout.welcome_activity );
 

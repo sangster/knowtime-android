@@ -9,4 +9,15 @@
   <string name="please_select_data_set">Please select your location</string>
   <string name="welcome_all_done">That\'s it! You\'re ready to go.</string>
   <string name="welcome_finish_button">Start</string>
+  <string name="resolved">Error resolved. Please re-try operation.</string>
+  <string name="no_resolution">Google Play services: unable to resolve
+    connection error.
+  </string>
+  <string name="unknown_activity_request_code">Received an unknown activity
+    request code %1$d in onActivityResult.
+  </string>
+  <string name="app_name">KnowTime</string>
+  <string name="no_play_services">Google Play Services not available.</string>
+  <string name="play_services_available">Google Play Services available.
+  </string>
 </resources>
