@@ -27,9 +27,13 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static ca.knowtime.LocationUtils.APPTAG;
 import static ca.knowtime.LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST;
@@ -44,13 +48,14 @@ public class NearbyStopsActivity
         extends FragmentActivity
 {
     public static final float DEFAULT_MAP_ZOOM = 17f;
-    private static final float MIN_ZOOM_SHOW_STOPS = 12f;
+    private static final float MIN_ZOOM_SHOW_STOPS = 14f;
 
     private MapFragment mMapFragment;
     private LocationRequest mLocationRequest;
     private LocationClient mLocationClient;
     private MyLocationListener mLocationListener;
     private KnowTimeAccess mAccess;
+    private Map<String, Marker> mVisibleMarkers = Collections.emptyMap();
 
 
     @Override
@@ -205,13 +210,36 @@ public class NearbyStopsActivity
             public void onResponse( final List<Stop> response ) {
                 final GoogleMap map = mMapFragment.getMap();
 
+                final Map<String, Marker> markers = new HashMap<>();
                 for( final Stop stop : response ) {
-                    final LatLng loc = new LatLng( stop.getLatitude(),
-                                                   stop.getLongitude() );
-                    map.addMarker( new MarkerOptions().position( loc )
-                                                      .draggable( false )
-                                                      .title( stop.getName() ) );
+                    final String id = stop.getId();
+                    if( mVisibleMarkers.containsKey( id ) ) {
+                        markers.put( id, mVisibleMarkers.get( id ) );
+                    } else {
+                        markers.put( id,
+                                     map.addMarker( getMarkerOptions( stop ) ) );
+                    }
                 }
+                removeVisibleMarkersNotIn( markers );
+                mVisibleMarkers = markers;
+            }
+
+
+            private void removeVisibleMarkersNotIn( final Map<String, Marker> markers ) {
+                for( final String id : mVisibleMarkers.keySet() ) {
+                    if( !markers.containsKey( id ) ) {
+                        mVisibleMarkers.get( id ).remove();
+                    }
+                }
+            }
+
+
+            private MarkerOptions getMarkerOptions( final Stop stop ) {
+                final LatLng loc = new LatLng( stop.getLatitude(),
+                                               stop.getLongitude() );
+                return new MarkerOptions().position( loc )
+                                          .draggable( false )
+                                          .title( stop.getName() );
             }
         }
     }
