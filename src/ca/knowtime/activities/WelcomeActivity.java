@@ -1,4 +1,4 @@
-package ca.knowtime;
+package ca.knowtime.activities;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.view.MotionEvent;
 import android.widget.Toast;
+import ca.knowtime.R;
 import ca.knowtime.adapters.WelcomePagerAdapter;
 import ca.knowtime.views.BlockableViewPager;
 import ca.knowtime.views.listeners.OnBlockableTouchEventListener;

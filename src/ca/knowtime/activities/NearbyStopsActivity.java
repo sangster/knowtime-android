@@ -1,19 +1,35 @@
-package ca.knowtime;
+package ca.knowtime.activities;
 
 import android.app.Dialog;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import android.view.View;
+import ca.knowtime.Development;
+import ca.knowtime.R;
+import ca.knowtime.comm.KnowTime;
+import ca.knowtime.comm.KnowTimeAccess;
+import ca.knowtime.comm.Response;
+import ca.knowtime.comm.models.gtfs.Stop;
 import ca.knowtime.fragments.ErrorDialogFragment;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.List;
 
 import static ca.knowtime.LocationUtils.APPTAG;
 import static ca.knowtime.LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST;
@@ -22,22 +38,27 @@ import static ca.knowtime.LocationUtils.UPDATE_INTERVAL_IN_MS;
 import static com.google.android.gms.common.GooglePlayServicesUtil.getErrorDialog;
 import static com.google.android.gms.common.GooglePlayServicesUtil.isGooglePlayServicesAvailable;
 import static com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY;
+import static com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom;
 
 public class NearbyStopsActivity
         extends FragmentActivity
 {
-    private MapView mMapView;
+    public static final float DEFAULT_MAP_ZOOM = 17f;
+    private static final float MIN_ZOOM_SHOW_STOPS = 12f;
+
+    private MapFragment mMapFragment;
     private LocationRequest mLocationRequest;
     private LocationClient mLocationClient;
     private MyLocationListener mLocationListener;
+    private KnowTimeAccess mAccess;
 
 
     @Override
     protected void onCreate( final Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
         setContentView( R.layout.nearby_stops_activity );
-        mMapView = (MapView) findViewById( R.id.nearby_stops_map );
-
+        mMapFragment = (MapFragment) getFragmentManager().findFragmentById( R.id.nearby_stops_map );
+        setUpMapView();
 
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setInterval( UPDATE_INTERVAL_IN_MS );
@@ -52,10 +73,35 @@ public class NearbyStopsActivity
     }
 
 
+    private void setUpMapView() {
+        MapsInitializer.initialize( this );
+        final GoogleMap map = mMapFragment.getMap();
+        map.setMyLocationEnabled( true );
+        map.setOnCameraChangeListener( new MyOnCameraChangeListener() );
+        map.setMapType( GoogleMap.MAP_TYPE_NORMAL );
+    }
+
+
     @Override
     public void onStart() {
         super.onStart();
+        mAccess = KnowTime.connect( this, Development.BASE_URL );
         mLocationClient.connect();
+    }
+
+
+    private void animateMapCamera( final Location location ) {
+        final LatLng loc = new LatLng( location.getLatitude(),
+                                       location.getLongitude() );
+        final CameraUpdate update = newLatLngZoom( loc, DEFAULT_MAP_ZOOM );
+        mMapFragment.getMap().animateCamera( update );
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mAccess.cancel( this );
     }
 
 
@@ -66,20 +112,6 @@ public class NearbyStopsActivity
         }
         mLocationClient.disconnect();
         super.onStop();
-    }
-
-
-    public void startUpdates( View v ) {
-        if( servicesConnected() ) {
-            startPeriodicUpdates();
-        }
-    }
-
-
-    public void stopUpdates( View v ) {
-        if( servicesConnected() ) {
-            stopPeriodicUpdates();
-        }
     }
 
 
@@ -129,13 +161,72 @@ public class NearbyStopsActivity
         }
     }
 
+    private class MyOnCameraChangeListener
+            implements GoogleMap.OnCameraChangeListener
+    {
+        @Override
+        public void onCameraChange( final CameraPosition cameraPosition ) {
+            if( cameraPosition.zoom > MIN_ZOOM_SHOW_STOPS ) {
+                updateStops();
+            } else {
+                mMapFragment.getMap().clear();
+            }
+        }
+
+
+        private void updateStops() {
+            Log.i( "Stops", "updateStops()" );
+
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(
+                    NearbyStopsActivity.this );
+            final String name = pref.getString( "data_set", null );
+            if( name == null ) {
+                Log.i( "Stops", "Data Set is not chosen" );
+                return;
+            }
+
+            final LatLngBounds bounds = mMapFragment.getMap()
+                                                    .getProjection()
+                                                    .getVisibleRegion().latLngBounds;
+            mAccess.stopsInBounds( this,
+                                   name,
+                                   (float) bounds.northeast.latitude,
+                                   (float) bounds.northeast.longitude,
+                                   (float) bounds.southwest.latitude,
+                                   (float) bounds.southwest.longitude,
+                                   new StopsResponse() );
+        }
+
+
+        private class StopsResponse
+                extends Response<List<Stop>>
+        {
+            @Override
+            public void onResponse( final List<Stop> response ) {
+                final GoogleMap map = mMapFragment.getMap();
+
+                for( final Stop stop : response ) {
+                    final LatLng loc = new LatLng( stop.getLatitude(),
+                                                   stop.getLongitude() );
+                    map.addMarker( new MarkerOptions().position( loc )
+                                                      .draggable( false )
+                                                      .title( stop.getName() ) );
+                }
+            }
+        }
+    }
 
     private class MyConnectionCallbacks
             implements GooglePlayServicesClient.ConnectionCallbacks
     {
         @Override
         public void onConnected( Bundle bundle ) {
-            startPeriodicUpdates();
+            if( servicesConnected() ) {
+                final Location location = mLocationClient.getLastLocation();
+                if( location != null ) {
+                    animateMapCamera( location );
+                }
+            }
         }
 
 

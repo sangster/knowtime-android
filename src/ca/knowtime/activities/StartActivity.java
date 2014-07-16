@@ -1,4 +1,4 @@
-package ca.knowtime;
+package ca.knowtime.activities;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
+import ca.knowtime.R;
 import ca.knowtime.fragments.ErrorDialogFragment;
 import com.google.android.gms.common.ConnectionResult;
 
@@ -29,7 +30,7 @@ public class StartActivity
                             Toast.LENGTH_LONG );
             finish();
         } else if( isDataSetNameSet() ) {
-            finish();
+            startActivity( new Intent( this, NearbyStopsActivity.class ) );
         } else {
             startActivity( new Intent( this, WelcomeActivity.class ) );
         }
