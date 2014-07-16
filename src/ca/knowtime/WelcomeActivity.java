@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.widget.Toast;
 import ca.knowtime.adapters.WelcomePagerAdapter;
 import ca.knowtime.views.BlockableViewPager;
 import ca.knowtime.views.listeners.OnBlockableTouchEventListener;
@@ -43,7 +44,13 @@ public class WelcomeActivity
     {
         @Override
         public boolean onBlockableTouchEvent( final MotionEvent ev ) {
-            return mPager.getCurrentItem() == WelcomePagerAdapter.PAGE_CHOOSE_DATA_SET && !isDataSetNameSet();
+            if( mPager.getCurrentItem() == WelcomePagerAdapter.PAGE_CHOOSE_DATA_SET && !isDataSetNameSet() ) {
+                Toast.makeText( WelcomeActivity.this,
+                                R.string.please_select_data_set,
+                                Toast.LENGTH_LONG );
+                return true;
+            }
+            return false;
         }
 
 

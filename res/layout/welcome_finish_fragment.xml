@@ -7,30 +7,29 @@
   android:background="@color/welcome_background">
 
   <ImageView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
     android:id="@+id/welcome_logo"
-    android:layout_gravity="center"
     android:src="@drawable/ic_launcher"
+    android:contentDescription="KnowTime"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
     android:layout_marginTop="@dimen/welcome_logo_vert_margin"
-    android:layout_marginBottom="@dimen/welcome_logo_vert_margin"
-    android:contentDescription="@string/knowtime_short_name" />
+    android:layout_marginBottom="@dimen/welcome_logo_vert_margin" />
 
   <TextView
+    android:id="@+id/welcome_all_done"
+    android:text="@string/welcome_all_done"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:text="@string/welcome_is_free"
-    android:id="@+id/welcome_text_free"
     android:layout_gravity="center"
     android:layout_marginTop="@dimen/welcome_text_vert_margin"
     android:layout_marginBottom="@dimen/welcome_text_vert_margin" />
 
-  <TextView
+  <Button
+    android:id="@+id/welcome_finish_button"
+    android:text="@string/welcome_finish_button"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:text="@string/welcome_no_signup"
-    android:id="@+id/welcome_text_no_signup"
     android:layout_gravity="center"
-    android:layout_marginTop="@dimen/welcome_text_vert_margin"
-    android:layout_marginBottom="@dimen/welcome_text_vert_margin" />
+    android:layout_marginTop="@dimen/welcome_text_vert_margin" />
 </LinearLayout>
