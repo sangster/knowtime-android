@@ -4,7 +4,7 @@ import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import ca.knowtime.views.listeners.OnBlockableTouchEventListener;
+import ca.knowtime.listeners.OnBlockableTouchEventListener;
 import com.google.common.base.Optional;
 
 public class BlockableViewPager

@@ -55,8 +55,10 @@ public class DataSetArrayAdapter
             view = LayoutInflater.from( mContext )
                                  .inflate( R.layout.data_set_chooser_item, parent, false );
         }
-        final TextView titleView = ViewHolder.get( view, R.id.data_set_chooser_item_title );
-        final TextView datesView = ViewHolder.get( view, R.id.data_set_chooser_item_dates );
+        final TextView titleView = ViewHolder.cacheView( view,
+                                                         R.id.data_set_chooser_item_title );
+        final TextView datesView = ViewHolder.cacheView( view,
+                                                         R.id.data_set_chooser_item_dates );
 
         final DataSetSummary item = getItem( position );
         titleView.setText( item.getTitle() );

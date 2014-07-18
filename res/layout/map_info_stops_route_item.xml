@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="horizontal"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/map_info_stops_route_item_short"
+    android:layout_gravity="center"
+    android:text="@string/placeholder_map_info_stops_route_item_short"
+    android:singleLine="true"
+    android:minWidth="48dp"
+    android:minHeight="48dp"
+    android:layout_margin="16dp"
+    android:gravity="center"
+    android:textStyle="bold"
+    android:background="#1778a6" />
+
+  <TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/map_info_stops_route_item_long"
+    android:layout_gravity="center"
+    android:text="@string/placeholder_map_info_stops_route_item_long"
+    android:gravity="center"
+    android:singleLine="true"
+    android:textSize="20dp"
+    android:textIsSelectable="false"
+    android:textColor="#ffffff" />
+</LinearLayout>

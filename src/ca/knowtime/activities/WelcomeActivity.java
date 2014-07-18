@@ -9,7 +9,7 @@ import android.widget.Toast;
 import ca.knowtime.R;
 import ca.knowtime.adapters.WelcomePagerAdapter;
 import ca.knowtime.views.BlockableViewPager;
-import ca.knowtime.views.listeners.OnBlockableTouchEventListener;
+import ca.knowtime.listeners.OnBlockableTouchEventListener;
 
 public class WelcomeActivity
         extends FragmentActivity

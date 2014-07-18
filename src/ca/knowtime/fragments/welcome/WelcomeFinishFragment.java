@@ -13,7 +13,6 @@ import ca.knowtime.activities.NearbyStopsActivity;
 public class WelcomeFinishFragment
         extends Fragment
 {
-    private Button mFinishButton;
 
 
     @Override
@@ -23,8 +22,9 @@ public class WelcomeFinishFragment
         final View view = inflater.inflate( R.layout.welcome_finish_fragment,
                                             container,
                                             false );
-        mFinishButton = (Button) view.findViewById( R.id.welcome_finish_button );
-        mFinishButton.setOnClickListener( new FinishButtonClickListener() );
+
+        final Button finishButton = (Button) view.findViewById( R.id.welcome_finish_button );
+        finishButton.setOnClickListener( new FinishButtonClickListener() );
 
         return view;
     }

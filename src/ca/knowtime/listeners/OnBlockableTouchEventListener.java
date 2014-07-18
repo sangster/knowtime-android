@@ -1,4 +1,4 @@
-package ca.knowtime.views.listeners;
+package ca.knowtime.listeners;
 
 import android.view.MotionEvent;
 

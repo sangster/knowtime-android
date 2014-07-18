@@ -19,5 +19,5 @@
   <string name="app_name">KnowTime</string>
   <string name="no_play_services">Google Play Services not available.</string>
   <string name="play_services_available">Google Play Services available.
-  </string>
+  </string><string name="map_info_stop_show_drawer">Show Routes</string><string name="map_info_stop_show_routes"><![CDATA[<< Show Routes]]></string>
 </resources>

@@ -6,7 +6,7 @@ import android.view.View;
 public class ViewHolder
 {
     @SuppressWarnings("unchecked")
-    public static <T extends View> T get( View view, int id ) {
+    public static <T extends View> T cacheView( View view, int id ) {
         final SparseArray<View> viewHolder = getViewHolder( view );
 
         View childView = viewHolder.get( id );
