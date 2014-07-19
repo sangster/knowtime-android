@@ -23,11 +23,9 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:id="@+id/map_info_stops_route_item_long"
-    android:layout_gravity="center"
+    android:layout_gravity="center_vertical|left"
     android:text="@string/placeholder_map_info_stops_route_item_long"
-    android:gravity="center"
-    android:singleLine="true"
-    android:textSize="20dp"
+    android:textSize="18dp"
     android:textIsSelectable="false"
     android:textColor="#ffffff" />
 </LinearLayout>

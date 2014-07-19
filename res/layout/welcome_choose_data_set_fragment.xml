@@ -14,7 +14,9 @@
     android:layout_gravity="center"
     style="@android:style/TextAppearance.DeviceDefault.Large"
     android:layout_marginTop="8dp"
-    android:layout_marginBottom="16dp" />
+    android:layout_marginBottom="16dp"
+    android:textColor="@color/welcome_foreground"
+    android:textStyle="bold" />
 
   <ListView
     android:layout_width="match_parent"

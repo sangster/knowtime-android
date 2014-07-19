@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <color name="welcome_foreground">#121212</color>
   <color name="welcome_background">#ee6644</color>
   <color name="data_set_chooser_item_pressed_color">#33ffffff</color>
   <color name="drawer_scrim_color">#33000000</color>

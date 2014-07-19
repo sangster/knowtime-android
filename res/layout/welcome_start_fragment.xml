@@ -7,10 +7,11 @@
   android:background="@color/welcome_background">
 
   <ImageView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_width="148dp"
+    android:layout_height="148dp"
     android:id="@+id/welcome_logo"
     android:layout_gravity="center"
+    android:textColor="@color/welcome_foreground"
     android:src="@drawable/ic_launcher"
     android:layout_marginTop="@dimen/welcome_logo_vert_margin"
     android:layout_marginBottom="@dimen/welcome_logo_vert_margin"
@@ -23,7 +24,9 @@
     android:id="@+id/welcome_text_free"
     android:layout_gravity="center"
     android:layout_marginTop="@dimen/welcome_text_vert_margin"
-    android:layout_marginBottom="@dimen/welcome_text_vert_margin" />
+    android:layout_marginBottom="@dimen/welcome_text_vert_margin"
+    android:textColor="@color/welcome_foreground"
+    android:textSize="24dp" />
 
   <TextView
     android:layout_width="wrap_content"
@@ -32,5 +35,7 @@
     android:id="@+id/welcome_text_no_signup"
     android:layout_gravity="center"
     android:layout_marginTop="@dimen/welcome_text_vert_margin"
-    android:layout_marginBottom="@dimen/welcome_text_vert_margin" />
+    android:layout_marginBottom="@dimen/welcome_text_vert_margin"
+    android:textColor="@color/welcome_foreground"
+    android:textSize="24dp" />
 </LinearLayout>

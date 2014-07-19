@@ -2,6 +2,5 @@
   <dimen name="activity_horizontal_margin">16dp</dimen>
   <dimen name="activity_vertical_margin">16dp</dimen>
   <dimen name="welcome_logo_vert_margin">32dp</dimen>
-  <dimen name="welcome_text_vert_margin">16dp</dimen>
-
+  <dimen name="welcome_text_vert_margin">24dp</dimen>
 </resources>

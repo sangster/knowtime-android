@@ -50,7 +50,7 @@ public class StopRoutesViewAdapter
                          View view,
                          final ViewGroup parent ) {
         if( view == null ) {
-            view = mInflater.inflate( R.layout.map_info_stops_route_item,
+            view = mInflater.inflate( R.layout.stops_route_item,
                                       parent,
                                       false );
         }
